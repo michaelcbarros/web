@@ -245,8 +245,8 @@ button.small {
 }
 
 .pdf-section {
-  margin-top: 14px;
-  padding-top: 8px;
+  margin-top: 12px;
+  padding-top: 6px;
   border-top: 1px solid #e5e7eb;
   page-break-inside: avoid;
 }
@@ -266,10 +266,10 @@ button.small {
 .field-row {
   display: grid;
   grid-template-columns: 190px 1fr;
-  gap: 8px;
+  gap: 7px;
   font-size: 9pt;
   line-height: 1.35;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .field-label {

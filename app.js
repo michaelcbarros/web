@@ -35,9 +35,14 @@ function valueOrPlaceholder(value, { multiline = true } = {}) {
 }
 
 function buildField(label, value, options = {}) {
-  const { internalOnly = false, mode = 'production' } = options;
+  const { internalOnly = false, mode = 'production', hideIfEmptyInProduction = false } = options;
 
   if (internalOnly && mode === 'production') {
+    return '';
+  }
+
+  const raw = (value || '').trim();
+  if (hideIfEmptyInProduction && mode === 'production' && !raw) {
     return '';
   }
 
@@ -50,7 +55,9 @@ function buildField(label, value, options = {}) {
 }
 
 function groupFields(rows) {
-  return `<div class="field-group">${rows.join('')}</div>`;
+  const filtered = rows.filter(Boolean);
+  if (!filtered.length) return '';
+  return `<div class="field-group">${filtered.join('')}</div>`;
 }
 
 function buildSection(title, fieldsHtml) {
@@ -174,6 +181,29 @@ function renderPreview(passedData) {
     ])
   );
 
+  const atAGlanceSection = buildSection(
+    'At-a-glance',
+    groupFields([
+      buildField('Load-in', data.loadInTime, { mode }),
+      buildField('Soundcheck', data.soundcheckTime, { mode }),
+      buildField('Doors', data.doorsTime, { mode }),
+      buildField('Show Start', data.showStartTime, { mode }),
+      buildField('Set Lengths', data.setLengths, { mode }),
+      buildField('Curfew / Hard Out', data.curfew, { mode }),
+      buildField('Load-out', data.loadOutTime, { mode })
+    ]) +
+      groupFields([
+        buildField('Promoter / Event Management', data.keyPromoter, { mode }),
+        buildField('Venue GM', data.keyVenueGm, { mode }),
+        buildField('Day-of Show Runner', data.keyRunner, { mode }),
+        buildField('Production Manager', data.keyProductionManager, { mode }),
+        buildField('Security Lead', data.keySecurityLead, { mode }),
+        buildField('Box Office Lead', data.keyBoxOfficeLead, { mode }),
+        buildField('Artist Tour Manager / Advancing', data.keyTourManager, { mode }),
+        buildField('FOH Engineer', data.keyFohEngineer, { mode })
+      ])
+  );
+
   const eventDetailsSection = buildSection(
     'Event Details',
     groupFields([
@@ -244,9 +274,12 @@ function renderPreview(passedData) {
   const houseSection = buildSection(
     'House Management',
     groupFields([
-      buildField('Strobe Lights', data.strobeLights, { mode }),
+      buildField('Strobe Lights', data.strobeLights, { mode, hideIfEmptyInProduction: true }),
       buildField('Audience Photo / Video Policy', data.audiencePolicy, { mode }),
-      buildField('Professional Photo / Video', data.professionalPhotoVideo, { mode }),
+      buildField('Professional Photo / Video', data.professionalPhotoVideo, {
+        mode,
+        hideIfEmptyInProduction: true
+      }),
       buildField('GA Reserved Seats', data.gaReservedSeats, { mode })
     ])
   );
@@ -307,17 +340,27 @@ function renderPreview(passedData) {
     'Production Requirements',
     groupFields([
       buildField('Staging', data.staging, { mode }),
-      buildField('Stage / Stairs / Platforms', data.stagePlatforms, { mode }),
-      buildField('Lineset / Rigging', data.linesetRigging, { mode }),
-      buildField('Piano / Tuning', data.pianoTuning, { mode }),
-      buildField('Lighting / Haze', data.lightingHaze, { mode }),
+      buildField('Drum Riser / Platforms', data.stagePlatforms, { mode }),
+      buildField('Lighting / Haze', data.lightingHaze, { mode })
+    ]) +
+    groupFields([
+      buildField('Rigging', data.linesetRigging, { mode }),
       buildField('Plot', data.plot, { mode })
     ]) +
     groupFields([
-      buildField('Audio Backline', data.audioBackline, { mode }),
-      buildField('Video Streaming', data.videoStreaming, { mode }),
-      buildField('Production Notes', data.productionNotes, { mode }),
-      buildField('Other', data.productionOther, { mode })
+      buildField('Audio - Band Provides', data.audioBackline, { mode }),
+      buildField('Audio - Venue Provides', data.productionOther, {
+        mode,
+        hideIfEmptyInProduction: true
+      }),
+      buildField('Audio Notes', data.productionNotes, { mode })
+    ]) +
+    groupFields([
+      buildField('Video Streaming', data.videoStreaming, { mode, hideIfEmptyInProduction: true }),
+      buildField('Piano / Tuning', data.pianoTuning, {
+        mode,
+        hideIfEmptyInProduction: true
+      })
     ]) +
     groupFields([
       buildField('Crew - They Bring', data.crewTheyBring, { mode }),
@@ -348,6 +391,7 @@ function renderPreview(passedData) {
     ${headerBlock}
     ${headerSection}
     ${overviewSection}
+    ${atAGlanceSection}
     ${keyContactsSection}
     ${eventDetailsSection}
     ${scheduleSection}
