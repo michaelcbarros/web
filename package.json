@@ -1,0 +1,20 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "description": "Show advance PDF generator (Didactidigital version)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo \"Static site - no build step needed\"",
+    "test": "echo \"No automated tests configured\""
+  },
+  "keywords": [
+    "show",
+    "advance",
+    "pdf"
+  ],
+  "author": "Didactidigital",
+  "license": "MIT",
+  "type": "commonjs",
+  "private": true
+}
