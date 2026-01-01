@@ -25,6 +25,13 @@ The server runs at `http://localhost:4173` by default.
 2. Click **Generate PDF**. The preview updates and the print dialog opens.
 3. Choose “Save as PDF” in your browser’s print dialog. The suggested filename is auto-filled per the required format.
 
+### Redaction modes
+
+- **Production (default):** Hides internal financial items (door price, merch split) and removes the Settlement section entirely.
+- **Internal:** Shows all internal-only rows and the Settlement section.
+
+Use the **Redaction Mode** selector in the header to switch between outputs before clicking **Generate PDF**.
+
 ## Notes
 
 - Page layout is operational and designed to tolerate incomplete data—fields stay in place as blank lines.

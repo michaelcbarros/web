@@ -2,12 +2,11 @@ const form = document.getElementById('advance-form');
 const preview = document.getElementById('pdf-preview');
 const addContactButton = document.getElementById('add-contact');
 const contactsContainer = document.getElementById('contact-rows');
+const modeSelect = document.getElementById('mode-select');
 const previewButtons = [
   document.getElementById('preview-button'),
   document.getElementById('refresh-preview-footer')
 ];
-
-const blankLine = '<span class="blank-line"></span>';
 
 function escapeHtml(value = '') {
   return value
@@ -18,23 +17,40 @@ function escapeHtml(value = '') {
     .replace(/'/g, '&#039;');
 }
 
-function valueOrBlank(value, { multiline = true, large = false } = {}) {
-  if (!value) {
-    return `<span class="blank-line${large ? ' large' : ''}"></span>`;
+function valueOrPlaceholder(value, { multiline = true } = {}) {
+  const raw = (value || '').trim();
+
+  if (!raw) {
+    return '<span class="value-text">TBD</span>';
   }
 
-  const safe = escapeHtml(value);
+  const normalized = raw.toLowerCase();
+  if (normalized === 'n/a' || normalized === 'na' || normalized === 'not applicable') {
+    return '<span class="value-text">N/A</span>';
+  }
+
+  const safe = escapeHtml(raw);
   const formatted = multiline ? safe.replace(/\n/g, '<br />') : safe;
-  return `<span class="value-text">${formatted}</span>`;
+  return `<span class="value-text${multiline ? ' multiline' : ''}">${formatted}</span>`;
 }
 
 function buildField(label, value, options = {}) {
+  const { internalOnly = false, mode = 'production' } = options;
+
+  if (internalOnly && mode === 'production') {
+    return '';
+  }
+
   return `
     <div class="field-row">
       <span class="field-label">${label}:</span>
-      <span class="field-value">${valueOrBlank(value, options)}</span>
+      <span class="field-value">${valueOrPlaceholder(value, options)}</span>
     </div>
   `;
+}
+
+function groupFields(rows) {
+  return `<div class="field-group">${rows.join('')}</div>`;
 }
 
 function buildSection(title, fieldsHtml) {
@@ -49,15 +65,15 @@ function buildSection(title, fieldsHtml) {
 function buildContactsTable(contacts) {
   const rows =
     contacts.length === 0
-      ? `<tr><td colspan="4">${blankLine}</td></tr>`
+      ? `<tr><td colspan="4"><span class="value-text">TBD</span></td></tr>`
       : contacts
           .map(
             (contact) => `
           <tr>
-            <td>${valueOrBlank(contact.name, { multiline: false })}</td>
-            <td>${valueOrBlank(contact.email, { multiline: false })}</td>
-            <td>${valueOrBlank(contact.phone, { multiline: false })}</td>
-            <td>${valueOrBlank(contact.role, { multiline: false })}</td>
+            <td>${valueOrPlaceholder(contact.name, { multiline: false })}</td>
+            <td>${valueOrPlaceholder(contact.email, { multiline: false })}</td>
+            <td>${valueOrPlaceholder(contact.phone, { multiline: false })}</td>
+            <td>${valueOrPlaceholder(contact.role, { multiline: false })}</td>
           </tr>
         `
           )
@@ -100,6 +116,7 @@ function collectFormData() {
   const formData = new FormData(form);
   const data = Object.fromEntries(formData.entries());
   data.contacts = collectContacts();
+  data.mode = modeSelect?.value || 'production';
   return data;
 }
 
@@ -112,118 +129,242 @@ function buildFileName(data) {
 
 function renderPreview(passedData) {
   const data = passedData || collectFormData();
+  const mode = data.mode || 'production';
   const venueAddress = [data.venueStreet, data.venueCityStateZip].filter(Boolean).join(', ');
+  const lodgingFields = [
+    data.lodgingProvider,
+    data.roomsNights,
+    data.propertyName,
+    data.checkInCheckOut,
+    data.namesConfirmations
+  ];
+  const lodgingAllEmpty = lodgingFields.every((field) => !field || !field.trim());
+  const lodgingOptOut =
+    lodgingAllEmpty ||
+    ['n/a', 'na', 'not applicable', 'none', 'no lodging'].includes(
+      (data.lodgingProvider || '').trim().toLowerCase()
+    ) ||
+    false;
+
+  const lodgingValue = (value) => (lodgingOptOut && !value ? 'N/A' : value);
 
   const headerBlock = `
     <div class="pdf-title">
-      ${valueOrBlank(data.eventName, { multiline: false, large: true })}
+      ${valueOrPlaceholder(data.eventName, { multiline: false })}
     </div>
-    <div class="pdf-subtitle">${valueOrBlank(data.eventDate, { multiline: false })}</div>
-    <div class="pdf-subtitle">${valueOrBlank(data.venueName, { multiline: false })}</div>
-    <div class="pdf-subtitle">${valueOrBlank(venueAddress, { multiline: false })}</div>
+    <div class="pdf-subtitle">${valueOrPlaceholder(data.eventDate, { multiline: false })}</div>
+    <div class="pdf-subtitle">${valueOrPlaceholder(data.venueName, { multiline: false })}</div>
+    <div class="pdf-subtitle">${valueOrPlaceholder(venueAddress, { multiline: false })}</div>
   `;
 
   const headerSection = buildSection(
     'Header',
-    buildField('Event Name', data.eventName) +
-      buildField('Event Date', data.eventDate) +
-      buildField('Venue Name', data.venueName) +
-      buildField('Venue Address', venueAddress)
+    buildField('Event Name', data.eventName, { mode }) +
+      buildField('Event Date', data.eventDate, { mode }) +
+      buildField('Venue Name', data.venueName, { mode }) +
+      buildField('Venue Address', venueAddress, { mode })
+  );
+
+  const overviewSection = buildSection(
+    'Event Overview',
+    groupFields([
+      buildField('Promoter', data.promoterName, { mode }),
+      buildField('Show Type', data.showType, { mode }),
+      buildField('Venue Capacity', data.capacity, { mode })
+    ])
   );
 
   const eventDetailsSection = buildSection(
     'Event Details',
-    buildField('Announce Date', data.announceDate) +
-      buildField('On-Sale Date / Time', data.onSaleDateTime) +
-      buildField('Event Date(s)', data.eventDates) +
-      buildField('Doors / ROS Line', data.doorsRos)
+    groupFields([
+      buildField('Announce Date', data.announceDate, { mode }),
+      buildField('On-Sale Date / Time', data.onSaleDateTime, { mode }),
+      buildField('Event Date(s)', data.eventDates, { mode }),
+      buildField('Doors / ROS Line', data.doorsRos, { mode })
+    ])
+  );
+
+  const scheduleSection = buildSection(
+    'Schedule / Timeline',
+    groupFields([
+      buildField('Load-in', data.loadInTime, { mode }),
+      buildField('Soundcheck', data.soundcheckTime, { mode }),
+      buildField('Doors', data.doorsTime, { mode }),
+      buildField('Show Start', data.showStartTime, { mode }),
+      buildField('Set Lengths (Support / Headliner)', data.setLengths, { mode }),
+      buildField('Curfew / Hard Out', data.curfew, { mode }),
+      buildField('Load-out', data.loadOutTime, { mode })
+    ])
   );
 
   const talentSection = buildSection(
     'Event Talent',
-    buildField('Headliner', data.headliner) + buildField('Support', data.support)
+    groupFields([buildField('Headliner', data.headliner, { mode }) + buildField('Support', data.support, { mode })])
+  );
+
+  const keyContactsSection = buildSection(
+    'Key Contacts',
+    groupFields([
+      buildField('Promoter / Event Management', data.keyPromoter, { mode }),
+      buildField('Venue GM', data.keyVenueGm, { mode }),
+      buildField('Day-of Show Runner', data.keyRunner, { mode }),
+      buildField('Production Manager', data.keyProductionManager, { mode }),
+      buildField('Security Lead', data.keySecurityLead, { mode }),
+      buildField('Box Office Lead', data.keyBoxOfficeLead, { mode }),
+      buildField('Artist Tour Manager / Advancing', data.keyTourManager, { mode }),
+      buildField('FOH Engineer', data.keyFohEngineer, { mode })
+    ])
   );
 
   const ticketingSection = buildSection(
     'Ticketing / Box Office',
-    buildField('Capacity', data.capacity) +
-      buildField('Format (Reserved vs GA)', data.format) +
-      buildField('Artist Comps', data.artistComps) +
-      buildField('Venue Comps', data.venueComps) +
-      buildField('ADA Needs', data.adaNeeds)
+    groupFields([
+      buildField('Ticket Platform', data.ticketPlatform, { mode }),
+      buildField('Box Office Open', data.boxOfficeOpen, { mode }),
+      buildField('Will Call Process', data.willCallProcess, { mode }),
+      buildField('Format (Reserved vs GA)', data.format, { mode }),
+      buildField('Artist Comps', data.artistComps, { mode }),
+      buildField('Venue Comps', data.venueComps, { mode }),
+      buildField('On-Sale Date / Time', data.onSaleDateTime, { mode }),
+      buildField('Door Price', data.doorPrice, { mode, internalOnly: true }),
+      buildField('ADA Needs', data.adaNeeds, { mode })
+    ])
+  );
+
+  const loadInSection = buildSection(
+    'Load-in & Parking',
+    groupFields([
+      buildField('Load-in Entrance / Address', data.loadInAddress, { mode }),
+      buildField('Dock / Ramp Notes', data.dockNotes, { mode }),
+      buildField('Parking Instructions', data.parkingInstructions, { mode }),
+      buildField('Credentials / Access Notes', data.accessNotes, { mode })
+    ])
   );
 
   const houseSection = buildSection(
     'House Management',
-    buildField('Strobe Lights', data.strobeLights) +
-      buildField('Audience Photo / Video Policy', data.audiencePolicy) +
-      buildField('Professional Photo / Video', data.professionalPhotoVideo) +
-      buildField('GA Reserved Seats', data.gaReservedSeats)
+    groupFields([
+      buildField('Strobe Lights', data.strobeLights, { mode }),
+      buildField('Audience Photo / Video Policy', data.audiencePolicy, { mode }),
+      buildField('Professional Photo / Video', data.professionalPhotoVideo, { mode }),
+      buildField('GA Reserved Seats', data.gaReservedSeats, { mode })
+    ])
   );
 
   const hospitalitySection = buildSection(
     'Hospitality & Catering',
-    buildField('Budget', data.budget) +
-      buildField('Caterer', data.caterer) +
-      buildField('Meals for # Artists / Personnel', data.mealsFor) +
-      buildField('Meal Times', data.mealTimes) +
-      buildField('Dietary Restrictions', data.dietaryRestrictions) +
-      buildField('Meal Location', data.mealLocation)
+    groupFields([
+      buildField('Budget', data.budget, { mode }),
+      buildField('Caterer', data.caterer, { mode }),
+      buildField('Meals for # Artists / Personnel', data.mealsFor, { mode }),
+      buildField('Meal Times', data.mealTimes, { mode }),
+      buildField('Dietary Restrictions', data.dietaryRestrictions, { mode }),
+      buildField('Meal Location', data.mealLocation, { mode })
+    ])
   );
 
   const transportationSection = buildSection(
     'Transportation',
-    buildField('Transportation Notes', data.transportationNotes)
+    groupFields([buildField('Transportation Notes', data.transportationNotes, { mode })])
+  );
+
+  const merchandiseSection = buildSection(
+    'Merchandise',
+    groupFields([
+      buildField('Merch Allowed', data.merchAllowed, { mode }),
+      buildField('Merch Location', data.merchLocation, { mode }),
+      buildField('Cashless Policy', data.cashlessPolicy, { mode }),
+      buildField('Staffing', data.merchStaffing, { mode }),
+      buildField('Merch Split %', data.merchSplit, { mode, internalOnly: true })
+    ])
   );
 
   const lodgingSection = buildSection(
     'Lodging',
-    buildField('Artist Provides vs Venue Provides', data.lodgingProvider) +
-      buildField('Rooms / Nights', data.roomsNights) +
-      buildField('Property Name', data.propertyName) +
-      buildField('Check-in / Check-out', data.checkInCheckOut) +
-      buildField('Names / Confirmation Numbers', data.namesConfirmations)
+    groupFields([
+      buildField('Artist Provides vs Venue Provides', lodgingValue(data.lodgingProvider), { mode }),
+      buildField('Rooms / Nights', lodgingValue(data.roomsNights), { mode }),
+      buildField('Property Name', lodgingValue(data.propertyName), { mode }),
+      buildField('Check-in / Check-out', lodgingValue(data.checkInCheckOut), { mode }),
+      buildField('Names / Confirmation Numbers', lodgingValue(data.namesConfirmations), { mode })
+    ])
   );
 
   const securitySection = buildSection(
-    'Security',
-    buildField('Bag Check', data.bagCheck) + buildField('Theater Security', data.theaterSecurity)
+    'Security & Staffing',
+    groupFields([
+      buildField('Bag Check', data.bagCheck, { mode }),
+      buildField('Theater Security', data.theaterSecurity, { mode }),
+      buildField('Re-entry Policy', data.reEntryPolicy, { mode }),
+      buildField('Bag Policy Details', data.bagPolicyDetails, { mode }),
+      buildField('Barricade Security', data.barricadeSecurity, { mode }),
+      buildField('Artist Escort Policy', data.artistEscortPolicy, { mode }),
+      buildField('Emergency Procedures', data.emergencyProcedures, { mode })
+    ])
   );
 
   const productionSection = buildSection(
     'Production Requirements',
-    buildField('Staging', data.staging) +
-      buildField('Stage / Stairs / Platforms', data.stagePlatforms) +
-      buildField('Lineset / Rigging', data.linesetRigging) +
-      buildField('Piano / Tuning', data.pianoTuning) +
-      buildField('Lighting / Haze', data.lightingHaze) +
-      buildField('Plot', data.plot) +
-      buildField('Audio Backline', data.audioBackline) +
-      buildField('Video Streaming', data.videoStreaming) +
-      buildField('Production Notes', data.productionNotes) +
-      buildField('Other', data.productionOther) +
-      buildField('Crew - They Bring', data.crewTheyBring) +
-      buildField('Crew - We Provide', data.crewWeProvide)
+    groupFields([
+      buildField('Staging', data.staging, { mode }),
+      buildField('Stage / Stairs / Platforms', data.stagePlatforms, { mode }),
+      buildField('Lineset / Rigging', data.linesetRigging, { mode }),
+      buildField('Piano / Tuning', data.pianoTuning, { mode }),
+      buildField('Lighting / Haze', data.lightingHaze, { mode }),
+      buildField('Plot', data.plot, { mode })
+    ]) +
+    groupFields([
+      buildField('Audio Backline', data.audioBackline, { mode }),
+      buildField('Video Streaming', data.videoStreaming, { mode }),
+      buildField('Production Notes', data.productionNotes, { mode }),
+      buildField('Other', data.productionOther, { mode })
+    ]) +
+    groupFields([
+      buildField('Crew - They Bring', data.crewTheyBring, { mode }),
+      buildField('Crew - We Provide', data.crewWeProvide, { mode })
+    ])
   );
 
-  const nextTimeSection = buildSection('Next Time Notes', buildField('Notes', data.nextTimeNotes));
+  const settlementSection =
+    mode === 'production'
+      ? ''
+      : buildSection(
+          'Settlement (Internal)',
+          buildField('Settlement Location', data.settlementLocation, { mode }) +
+            buildField('Who Attends', data.settlementAttendees, { mode }) +
+            buildField('Paperwork Required', data.settlementPaperwork, { mode }) +
+            buildField('Payment Method', data.settlementPaymentMethod, { mode }) +
+            buildField('Cut-off Time', data.settlementCutoff, { mode })
+        );
+
+  const nextTimeSection = buildSection(
+    'Next Time Notes',
+    buildField('Notes', data.nextTimeNotes, { mode })
+  );
 
   const contactsSection = buildContactsTable(data.contacts);
 
   preview.innerHTML = `
     ${headerBlock}
     ${headerSection}
+    ${overviewSection}
+    ${keyContactsSection}
     ${eventDetailsSection}
+    ${scheduleSection}
     ${talentSection}
     ${ticketingSection}
+    ${loadInSection}
     ${houseSection}
     ${hospitalitySection}
     ${transportationSection}
+    ${merchandiseSection}
     ${lodgingSection}
     ${securitySection}
     ${productionSection}
+    ${settlementSection}
     ${nextTimeSection}
     ${contactsSection}
+    <div class="page-number"></div>
     <div id="print-footer" class="print-footer">Powered by Didactidigital</div>
   `;
 }
@@ -273,6 +414,8 @@ function handleGenerate(event) {
 function attachEvents() {
   form.addEventListener('submit', handleGenerate);
   form.addEventListener('input', () => renderPreview());
+
+  modeSelect?.addEventListener('change', () => renderPreview());
 
   previewButtons.forEach((button) => {
     if (button) {
