@@ -5,7 +5,7 @@
   --muted: #475569;
   --border: #e2e8f0;
   --border-strong: #cbd5e1;
-  --accent: #2563eb;
+  --accent: #c53030;
   --label: #64748b;
 }
 
@@ -209,14 +209,13 @@ button.small {
 
 .pdf-preview {
   background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 26px;
+  border: 1px solid #d6d8dd;
+  border-radius: 2px;
+  padding: 20px;
   min-height: 11in;
   width: 7.25in;
   max-width: 100%;
   margin: 0 auto;
-  box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.6);
 }
 
 .placeholder {
@@ -245,9 +244,9 @@ button.small {
 }
 
 .pdf-section {
-  margin-top: 12px;
-  padding-top: 6px;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 10px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(197, 48, 48, 0.28);
   page-break-inside: avoid;
 }
 
@@ -256,7 +255,7 @@ button.small {
   margin-bottom: 6px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: #0f172a;
+  color: var(--accent);
 }
 
 .field-group + .field-group {
@@ -268,13 +267,13 @@ button.small {
   grid-template-columns: 190px 1fr;
   gap: 7px;
   font-size: 9pt;
-  line-height: 1.35;
-  margin-bottom: 3px;
+  line-height: 1.32;
+  margin-bottom: 2px;
 }
 
 .field-label {
-  font-weight: 500;
-  color: var(--label);
+  font-weight: 400;
+  color: #6b7280;
   text-transform: none;
 }
 
