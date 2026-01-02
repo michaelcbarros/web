@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Show Advance PDF Builder</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-header">
+        <div>
+          <p class="eyebrow">Didactidigital</p>
+          <h1>Show Advance PDF Builder</h1>
+          <p class="lede">
+            Enter the show advance details and generate a clean, print-ready PDF that mirrors the
+            required layout. Missing fields stay visible as blank lines—no sections are dropped.
+          </p>
+        </div>
+        <div class="header-actions">
+          <label class="input-field">
+            <span>Redaction Mode</span>
+            <select id="mode-select" name="mode">
+              <option value="production">Production (hide financials)</option>
+              <option value="internal">Internal (show everything)</option>
+            </select>
+          </label>
+          <button type="submit" form="advance-form" class="primary">Generate PDF</button>
+          <button type="button" id="preview-button" class="ghost">Refresh Preview</button>
+          <button type="button" id="download-html" class="ghost">Download HTML</button>
+          <button type="button" id="download-html-bundled" class="ghost">Download Self-Contained HTML</button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="form-panel">
+          <form id="advance-form" autocomplete="off">
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Header</h2>
+                <p class="hint">Event title, date, and venue information.</p>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Event Name</span>
+                  <input name="eventName" type="text" placeholder="Event name" />
+                </label>
+                <label class="input-field">
+                  <span>Event Date</span>
+                  <input name="eventDate" type="date" />
+                </label>
+                <label class="input-field">
+                  <span>Venue Name</span>
+                  <input name="venueName" type="text" placeholder="Venue name" />
+                </label>
+                <label class="input-field">
+                  <span>Venue Street</span>
+                  <input name="venueStreet" type="text" placeholder="Street address" />
+                </label>
+                <label class="input-field">
+                  <span>Venue City / State / Zip</span>
+                  <input name="venueCityStateZip" type="text" placeholder="City, State ZIP" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Event Overview</h2>
+                <p class="hint">High-level summary visible on page one.</p>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Promoter Name</span>
+                  <input name="promoterName" type="text" placeholder="Promoter / presenter" />
+                </label>
+                <label class="input-field">
+                  <span>Show Type</span>
+                  <select name="showType">
+                    <option value="">Select</option>
+                    <option value="GA Standing">GA Standing</option>
+                    <option value="GA Seated">GA Seated</option>
+                    <option value="Mixed">Mixed</option>
+                  </select>
+                </label>
+                <label class="input-field">
+                  <span>Venue Capacity</span>
+                  <input name="capacity" type="text" inputmode="numeric" placeholder="Capacity" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Event Details</h2>
+                <p class="hint">Keep this section aligned to key timelines.</p>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Announce Date</span>
+                  <input name="announceDate" type="date" />
+                </label>
+                <label class="input-field">
+                  <span>On-Sale Date / Time</span>
+                  <input name="onSaleDateTime" type="datetime-local" />
+                </label>
+                <label class="input-field">
+                  <span>Event Date(s)</span>
+                  <input name="eventDates" type="text" placeholder="e.g., Jan 10–11, 2026" />
+                </label>
+                <label class="input-field">
+                  <span>Doors / ROS Line</span>
+                  <input name="doorsRos" type="text" placeholder="e.g., 6:00 PM / ROS at 5:30 PM" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Schedule / Timeline</h2>
+                <p class="hint">Key day-of times and lengths.</p>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Load-in Time</span>
+                  <input name="loadInTime" type="text" placeholder="e.g., 10:00 AM" />
+                </label>
+                <label class="input-field">
+                  <span>Soundcheck Time</span>
+                  <input name="soundcheckTime" type="text" placeholder="e.g., 2:00 PM" />
+                </label>
+                <label class="input-field">
+                  <span>Doors Time</span>
+                  <input name="doorsTime" type="text" placeholder="e.g., 6:00 PM" />
+                </label>
+                <label class="input-field">
+                  <span>Show Start Time</span>
+                  <input name="showStartTime" type="text" placeholder="e.g., 7:30 PM" />
+                </label>
+                <label class="input-field">
+                  <span>Set Lengths (Support / Headliner)</span>
+                  <input name="setLengths" type="text" placeholder="e.g., 30 / 90 minutes" />
+                </label>
+                <label class="input-field">
+                  <span>Curfew / Hard Out</span>
+                  <input name="curfew" type="text" placeholder="e.g., 11:00 PM curfew" />
+                </label>
+                <label class="input-field">
+                  <span>Load-out Time</span>
+                  <input name="loadOutTime" type="text" placeholder="e.g., 11:15 PM" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Event Talent</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Headliner</span>
+                  <input name="headliner" type="text" placeholder="Headliner" />
+                </label>
+                <label class="input-field">
+                  <span>Support</span>
+                  <input name="support" type="text" placeholder="Support" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Key Contacts (Front Page)</h2>
+                <p class="hint">Primary day-of contacts; full directory still available below.</p>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Promoter / Event Management</span>
+                  <input name="keyPromoter" type="text" placeholder="Name / phone" />
+                </label>
+                <label class="input-field">
+                  <span>Venue GM</span>
+                  <input name="keyVenueGm" type="text" placeholder="Name / phone" />
+                </label>
+                <label class="input-field">
+                  <span>Day-of Show Runner</span>
+                  <input name="keyRunner" type="text" placeholder="Name / phone" />
+                </label>
+                <label class="input-field">
+                  <span>Production Manager</span>
+                  <input name="keyProductionManager" type="text" placeholder="Name / phone" />
+                </label>
+                <label class="input-field">
+                  <span>Security Lead</span>
+                  <input name="keySecurityLead" type="text" placeholder="Name / phone" />
+                </label>
+                <label class="input-field">
+                  <span>Box Office Lead</span>
+                  <input name="keyBoxOfficeLead" type="text" placeholder="Name / phone" />
+                </label>
+                <label class="input-field">
+                  <span>Artist Tour Manager / Advancing</span>
+                  <input name="keyTourManager" type="text" placeholder="Name / phone" />
+                </label>
+                <label class="input-field">
+                  <span>FOH Engineer</span>
+                  <input name="keyFohEngineer" type="text" placeholder="Name / phone" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Ticketing / Box Office</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Ticket Platform</span>
+                  <input name="ticketPlatform" type="text" placeholder="Platform / link" />
+                </label>
+                <label class="input-field">
+                  <span>Box Office Open Time</span>
+                  <input name="boxOfficeOpen" type="text" placeholder="e.g., 5:00 PM" />
+                </label>
+                <label class="input-field">
+                  <span>Will Call Process</span>
+                  <input name="willCallProcess" type="text" placeholder="Notes on ID / pickup" />
+                </label>
+                <label class="input-field">
+                  <span>Format</span>
+                  <select name="format">
+                    <option value="">Select format</option>
+                    <option value="General Admission">General Admission</option>
+                    <option value="Reserved">Reserved</option>
+                    <option value="Hybrid">Hybrid</option>
+                  </select>
+                </label>
+                <label class="input-field">
+                  <span>Artist Comps</span>
+                  <input name="artistComps" type="text" placeholder="Artist comps" />
+                </label>
+                <label class="input-field">
+                  <span>Venue Comps</span>
+                  <input name="venueComps" type="text" placeholder="Venue comps" />
+                </label>
+                <label class="input-field">
+                  <span>Door Price (Internal)</span>
+                  <input name="doorPrice" type="text" placeholder="Internal door price" />
+                </label>
+                <label class="input-field wide">
+                  <span>ADA Needs</span>
+                  <textarea name="adaNeeds" rows="2" placeholder="Accessibility notes"></textarea>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Load-in &amp; Parking</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Load-in Entrance / Address</span>
+                  <input name="loadInAddress" type="text" placeholder="Entrance details" />
+                </label>
+                <label class="input-field">
+                  <span>Dock / Ramp Notes</span>
+                  <input name="dockNotes" type="text" placeholder="Dock, ramp, clearance" />
+                </label>
+                <label class="input-field">
+                  <span>Parking Instructions</span>
+                  <textarea
+                    name="parkingInstructions"
+                    rows="2"
+                    placeholder="Artist vehicles, trailer, bus"
+                  ></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Credentials / Access Notes</span>
+                  <textarea
+                    name="accessNotes"
+                    rows="2"
+                    placeholder="Access, wristbands, stage doors"
+                  ></textarea>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>House Management</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Strobe Lights</span>
+                  <select name="strobeLights">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </label>
+                <label class="input-field">
+                  <span>Audience Photo / Video Policy</span>
+                  <select name="audiencePolicy">
+                    <option value="">Select</option>
+                    <option value="Permitted">Permitted</option>
+                    <option value="Not Permitted">Not Permitted</option>
+                  </select>
+                </label>
+                <label class="input-field">
+                  <span>GA Reserved Seats</span>
+                  <select name="gaReservedSeats">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </label>
+                <label class="input-field wide">
+                  <span>Professional Photo / Video</span>
+                  <textarea
+                    name="professionalPhotoVideo"
+                    rows="2"
+                    placeholder="Professional photo / video notes"
+                  ></textarea>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Hospitality &amp; Catering</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Budget</span>
+                  <input name="budget" type="text" placeholder="Budget" />
+                </label>
+                <label class="input-field">
+                  <span>Caterer</span>
+                  <input name="caterer" type="text" placeholder="Caterer" />
+                </label>
+                <label class="input-field">
+                  <span>Meals for # Artists / Personnel</span>
+                  <input name="mealsFor" type="text" placeholder="e.g., 8 artists" />
+                </label>
+                <label class="input-field">
+                  <span>Meal Times</span>
+                  <input name="mealTimes" type="text" placeholder="e.g., Between soundcheck" />
+                </label>
+                <label class="input-field">
+                  <span>Dietary Restrictions</span>
+                  <textarea name="dietaryRestrictions" rows="2" placeholder="Restrictions"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Meal Location</span>
+                  <input name="mealLocation" type="text" placeholder="Location" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Transportation</h2>
+              </div>
+              <label class="input-field wide">
+                <span>Transportation Notes</span>
+                <textarea
+                  name="transportationNotes"
+                  rows="2"
+                  placeholder="Any travel or transport notes"
+                ></textarea>
+              </label>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Merchandise</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Merch Allowed</span>
+                  <select name="merchAllowed">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </label>
+                <label class="input-field">
+                  <span>Merch Location</span>
+                  <input name="merchLocation" type="text" placeholder="Lobby, concourse, etc." />
+                </label>
+                <label class="input-field">
+                  <span>Cashless Policy</span>
+                  <input name="cashlessPolicy" type="text" placeholder="Card-only, cash accepted" />
+                </label>
+                <label class="input-field">
+                  <span>Staffing</span>
+                  <input name="merchStaffing" type="text" placeholder="Venue or tour staff" />
+                </label>
+                <label class="input-field">
+                  <span>Merch Split % (Internal)</span>
+                  <input name="merchSplit" type="text" placeholder="Internal split %" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Lodging</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Artist Provides vs Venue Provides</span>
+                  <input
+                    name="lodgingProvider"
+                    type="text"
+                    placeholder="Artist provides or venue provides"
+                  />
+                </label>
+                <label class="input-field">
+                  <span>Rooms / Nights</span>
+                  <input name="roomsNights" type="text" placeholder="# rooms / nights" />
+                </label>
+                <label class="input-field">
+                  <span>Property Name</span>
+                  <input name="propertyName" type="text" placeholder="Property name" />
+                </label>
+                <label class="input-field">
+                  <span>Check-in / Check-out</span>
+                  <input name="checkInCheckOut" type="text" placeholder="Check-in / check-out" />
+                </label>
+                <label class="input-field wide">
+                  <span>Names / Confirmation Numbers</span>
+                  <textarea
+                    name="namesConfirmations"
+                    rows="2"
+                    placeholder="Names and confirmation numbers"
+                  ></textarea>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Security &amp; Staffing</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Bag Check</span>
+                  <select name="bagCheck">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </label>
+                <label class="input-field">
+                  <span>Theater Security</span>
+                  <select name="theaterSecurity">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </label>
+                <label class="input-field">
+                  <span>Re-entry Policy</span>
+                  <input name="reEntryPolicy" type="text" placeholder="Re-entry notes" />
+                </label>
+                <label class="input-field">
+                  <span>Bag Policy Details</span>
+                  <input name="bagPolicyDetails" type="text" placeholder="Clear bag, sizes, etc." />
+                </label>
+                <label class="input-field">
+                  <span>Barricade Security</span>
+                  <select name="barricadeSecurity">
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </label>
+                <label class="input-field">
+                  <span>Artist Escort Policy</span>
+                  <input name="artistEscortPolicy" type="text" placeholder="Escort expectations" />
+                </label>
+                <label class="input-field wide">
+                  <span>Emergency Procedures</span>
+                  <textarea name="emergencyProcedures" rows="2" placeholder="Evacuation, contacts"></textarea>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Production Requirements</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Staging</span>
+                  <textarea name="staging" rows="2" placeholder="Staging notes"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Stage / Stairs / Platforms</span>
+                  <textarea name="stagePlatforms" rows="2" placeholder="Stage / stairs / platforms"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Lineset / Rigging</span>
+                  <textarea name="linesetRigging" rows="2" placeholder="Lineset / rigging"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Piano / Tuning</span>
+                  <textarea name="pianoTuning" rows="2" placeholder="Piano / tuning"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Lighting / Haze</span>
+                  <textarea name="lightingHaze" rows="2" placeholder="Lighting / haze"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Plot</span>
+                  <textarea name="plot" rows="2" placeholder="Plot"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Audio Backline</span>
+                  <textarea name="audioBackline" rows="2" placeholder="Audio backline"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Video Streaming</span>
+                  <textarea name="videoStreaming" rows="2" placeholder="Video streaming"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Production Notes</span>
+                  <textarea name="productionNotes" rows="2" placeholder="Additional production notes"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Other</span>
+                  <textarea name="productionOther" rows="2" placeholder="Other production needs"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Crew - They Bring</span>
+                  <textarea name="crewTheyBring" rows="2" placeholder="What they bring"></textarea>
+                </label>
+                <label class="input-field">
+                  <span>Crew - We Provide</span>
+                  <textarea name="crewWeProvide" rows="2" placeholder="What we provide"></textarea>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Settlement (Internal)</h2>
+              </div>
+              <div class="form-grid">
+                <label class="input-field">
+                  <span>Settlement Location</span>
+                  <input name="settlementLocation" type="text" placeholder="Office / room" />
+                </label>
+                <label class="input-field">
+                  <span>Who Attends</span>
+                  <input name="settlementAttendees" type="text" placeholder="Roles attending" />
+                </label>
+                <label class="input-field">
+                  <span>Paperwork Required</span>
+                  <input name="settlementPaperwork" type="text" placeholder="Invoices, W-9, etc." />
+                </label>
+                <label class="input-field">
+                  <span>Payment Method</span>
+                  <input name="settlementPaymentMethod" type="text" placeholder="Wire, check, cash" />
+                </label>
+                <label class="input-field">
+                  <span>Cut-off Time</span>
+                  <input name="settlementCutoff" type="text" placeholder="e.g., 11:15 PM" />
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Next Time Notes</h2>
+              </div>
+              <label class="input-field wide">
+                <span>Next Time Notes</span>
+                <textarea name="nextTimeNotes" rows="3" placeholder="Notes for next time"></textarea>
+              </label>
+            </div>
+
+            <div class="form-section">
+              <div class="section-heading">
+                <h2>Contacts</h2>
+                <p class="hint">Add anyone the team should loop in for this advance.</p>
+              </div>
+              <div id="contact-rows" class="contact-rows"></div>
+              <button type="button" id="add-contact" class="ghost small">Add Contact</button>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="primary">Generate PDF</button>
+              <button type="button" id="refresh-preview-footer" class="ghost">Refresh Preview</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="preview-panel">
+          <div class="preview-header">
+            <div>
+              <p class="eyebrow">Print Preview</p>
+              <h2>Generated Layout</h2>
+              <p class="hint">The PDF mirrors this layout. Sections stay even when inputs are empty.</p>
+            </div>
+          </div>
+          <div id="pdf-preview" class="pdf-preview">
+            <div class="placeholder">
+              <p>Populate the form to see the printable preview.</p>
+              <p class="hint">Blank fields remain as lines so nothing drops out.</p>
+            </div>
+            <div id="print-footer" class="print-footer">Powered by Didactidigital</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
