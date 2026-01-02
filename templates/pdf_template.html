@@ -5,30 +5,34 @@
   <style>
     {{.CSS}}
     body { font-family: "Inter", Arial, sans-serif; color: #0f172a; }
-    .pdf-page { max-width: 7.1in; margin: 0 auto; padding: 4px 0 12px; }
-    .masthead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .pdf-page { max-width: 7.05in; margin: 0 auto; padding: 10px 0 16px; }
+    .masthead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .logo-slot { width: 24%; }
     .logo-slot.right { text-align: right; }
-    .brand-img { max-height: 48px; width: auto; object-fit: contain; }
-    .event-title { font-size: 22px; font-weight: 700; margin: 0; }
-    .event-date { font-size: 13px; margin-top: 4px; font-weight: 600; }
-    .event-venue { font-size: 11px; color: #6b7280; margin-top: 2px; }
-    .divider { border: 0; border-bottom: 1px solid #e5e7eb; margin: 8px 0 14px; }
+    .brand-img { max-height: 52px; width: auto; object-fit: contain; }
+    .page-header { text-align: center; margin: 6px 0 8px; }
+    .event-title { font-size: 22px; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+    .event-venue-line { font-size: 13px; color: #b91c1c; font-weight: 700; margin-top: 4px; }
+    .event-date { font-size: 12px; margin-top: 4px; font-weight: 600; color: #1f2937; }
+    .event-venue { font-size: 10.5px; color: #6b7280; margin-top: 3px; }
+    .divider { border: 0; border-bottom: 1px solid #e5e7eb; margin: 10px 0 16px; }
 
-    .card-grid { display: grid; gap: 12px; }
+    .card-grid { display: grid; gap: 14px; }
     .two-col { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-    .card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 14px; break-inside: avoid; page-break-inside: avoid; }
-    .card-title { margin: 0 0 8px; font-size: 12px; font-weight: 700; color: #b91c1c; letter-spacing: 0.01em; }
-    .field-row { display: flex; gap: 10px; margin-bottom: 6px; align-items: baseline; }
+    .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; break-inside: avoid; page-break-inside: avoid; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04); }
+    .card::before { content: ""; display: block; height: 12px; margin: -12px -14px 10px; border-radius: 10px 10px 0 0; background: linear-gradient(90deg, #fdecee 0%, #fff5f5 40%, #fdecee 100%); border-bottom: 1px solid #f8d7da; }
+    .card-title { margin: 0 0 8px; font-size: 12.5px; font-weight: 800; color: #b91c1c; letter-spacing: 0.01em; }
+    .field-row { display: flex; gap: 10px; margin-bottom: 7px; align-items: baseline; }
     .field-row:last-child { margin-bottom: 0; }
-    .field-label { flex: 0 0 160px; color: #6b7280; font-size: 10px; font-weight: 600; text-transform: none; }
-    .field-value { flex: 1; color: #0f172a; font-size: 11px; font-weight: 600; }
-    .field-value.muted { color: #9ca3af; font-weight: 600; }
+    .field-label { flex: 0 0 160px; color: #6b7280; font-size: 10.5px; font-weight: 600; text-transform: none; }
+    .field-value { flex: 1; color: #0f172a; font-size: 11.5px; font-weight: 700; line-height: 1.45; }
+    .field-value.muted { color: #9ca3af; font-weight: 700; }
+    .value-strong { font-weight: 800; }
     .tbd { font-style: italic; }
 
-    .contacts-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .contacts-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
     .contacts-table th, .contacts-table td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
-    .contacts-table th { background: #f8fafc; color: #374151; font-weight: 700; }
+    .contacts-table th { background: #f8fafc; color: #374151; font-weight: 800; }
   </style>
 </head>
 <body>
@@ -44,11 +48,11 @@
 
     <div class="page-header">
       <h1 class="event-title">{{fallback "eventName" "Show Advance"}}</h1>
+      {{if has "venueName"}}<div class="event-venue-line">{{display "venueName"}}</div>{{end}}
       {{if has "eventDate"}}<div class="event-date">{{display "eventDate"}}</div>{{end}}
       <div class="event-venue">
-        {{if has "venueName"}}{{display "venueName"}}{{end}}{{if and (has "venueName") (or (has "venueStreet") (has "venueCityStateZip"))}}, {{end}}
-        {{if has "venueStreet"}}{{display "venueStreet"}}{{end}}{{if and (has "venueStreet") (has "venueCityStateZip")}}, {{end}}
-        {{if has "venueCityStateZip"}}{{display "venueCityStateZip"}}{{end}}
+        {{if has "venueStreet"}}{{display "venueStreet"}}{{end}}{{if and (has "venueStreet") (has "venueCityStateZip")}} · {{end}}
+        {{if has "venueCityStateZip"}}{{display "venueCityStateZip"}}{{end}}{{if and (or (has "venueStreet") (has "venueCityStateZip"))}} · {{end}}Powered by Didactidigital
       </div>
     </div>
     <hr class="divider" />
@@ -65,13 +69,13 @@
 
       <div class="card">
         <h3 class="card-title">At-a-glance</h3>
-        <div class="field-row"><div class="field-label">Load-in</div><div class="field-value {{if not (has "loadInTime")}}muted tbd{{end}}">{{if has "loadInTime"}}{{display "loadInTime"}}{{else}}TBD{{end}}</div></div>
-        <div class="field-row"><div class="field-label">Soundcheck</div><div class="field-value {{if not (has "soundcheckTime")}}muted tbd{{end}}">{{if has "soundcheckTime"}}{{display "soundcheckTime"}}{{else}}TBD{{end}}</div></div>
-        <div class="field-row"><div class="field-label">Doors</div><div class="field-value {{if not (has "doorsTime")}}muted tbd{{end}}">{{if has "doorsTime"}}{{display "doorsTime"}}{{else}}TBD{{end}}</div></div>
-        <div class="field-row"><div class="field-label">Show Start</div><div class="field-value {{if not (has "showStartTime")}}muted tbd{{end}}">{{if has "showStartTime"}}{{display "showStartTime"}}{{else}}TBD{{end}}</div></div>
-        <div class="field-row"><div class="field-label">Set Lengths</div><div class="field-value {{if not (has "setLengths")}}muted tbd{{end}}">{{if has "setLengths"}}{{display "setLengths"}}{{else}}TBD{{end}}</div></div>
-        <div class="field-row"><div class="field-label">Curfew / Hard Out</div><div class="field-value {{if not (has "curfew")}}muted tbd{{end}}">{{if has "curfew"}}{{display "curfew"}}{{else}}TBD{{end}}</div></div>
-        <div class="field-row"><div class="field-label">Load-out</div><div class="field-value {{if not (has "loadOutTime")}}muted tbd{{end}}">{{if has "loadOutTime"}}{{display "loadOutTime"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Load-in</div><div class="field-value {{if not (has "loadInTime")}}muted tbd{{end}}">{{if has "loadInTime"}}<span class="value-strong">{{display "loadInTime"}}</span>{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Soundcheck</div><div class="field-value {{if not (has "soundcheckTime")}}muted tbd{{end}}">{{if has "soundcheckTime"}}<span class="value-strong">{{display "soundcheckTime"}}</span>{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Doors</div><div class="field-value {{if not (has "doorsTime")}}muted tbd{{end}}">{{if has "doorsTime"}}<span class="value-strong">{{display "doorsTime"}}</span>{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Show Start</div><div class="field-value {{if not (has "showStartTime")}}muted tbd{{end}}">{{if has "showStartTime"}}<span class="value-strong">{{display "showStartTime"}}</span>{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Set Lengths</div><div class="field-value {{if not (has "setLengths")}}muted tbd{{end}}">{{if has "setLengths"}}<span class="value-strong">{{display "setLengths"}}</span>{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Curfew / Hard Out</div><div class="field-value {{if not (has "curfew")}}muted tbd{{end}}">{{if has "curfew"}}<span class="value-strong">{{display "curfew"}}</span>{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Load-out</div><div class="field-value {{if not (has "loadOutTime")}}muted tbd{{end}}">{{if has "loadOutTime"}}<span class="value-strong">{{display "loadOutTime"}}</span>{{else}}TBD{{end}}</div></div>
       </div>
 
       {{if or (has "announceDate") (has "onSaleDateTime") (has "eventDates") (has "doorsRos")}}
