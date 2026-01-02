@@ -578,32 +578,31 @@ async function renderPdfFromPreview(baseFileName) {
     const usableWidth = pageWidth - margin * 2;
     const usableHeight = pageHeight - margin * 2;
 
-    const scaleFactor = canvas.width / clone.offsetWidth;
-    const usableHeightDom = usableHeight / scaleFactor;
+    // Relationship between canvas px and PDF pts
+    const pxToPtScale = usableWidth / canvas.width;
+    const usableHeightCanvas = usableHeight / pxToPtScale; // in canvas px
 
-    // Calculate page breaks based on section boundaries (DOM space)
+    // Calculate page breaks based on section boundaries (canvas space)
     const sections = Array.from(clone.querySelectorAll('.pdf-section'));
     const cloneRect = clone.getBoundingClientRect();
     const breaks = [0];
-    let currentHeight = 0;
     sections.forEach((section) => {
       const rect = section.getBoundingClientRect();
-      const top = rect.top - cloneRect.top;
-      const height = rect.height;
-      const sectionBottom = top + height;
-      if (sectionBottom - breaks[breaks.length - 1] > usableHeightDom) {
+      const topCanvas = (rect.top - cloneRect.top) * (canvas.width / clone.offsetWidth);
+      const heightCanvas = rect.height * (canvas.width / clone.offsetWidth);
+      const sectionBottom = topCanvas + heightCanvas;
+      if (sectionBottom - breaks[breaks.length - 1] > usableHeightCanvas) {
         // start new page at this section top
-        breaks.push(top);
+        breaks.push(topCanvas);
       }
     });
     // Add final end
-    breaks.push(canvas.height / scaleFactor);
+    breaks.push(canvas.height);
 
     for (let i = 0; i < breaks.length - 1; i++) {
-      const startDom = breaks[i];
-      const endDom = breaks[i + 1];
-      const sliceHeightDom = endDom - startDom;
-      const sliceHeightCanvas = sliceHeightDom * scaleFactor;
+      const startCanvas = breaks[i];
+      const endCanvas = breaks[i + 1];
+      const sliceHeightCanvas = endCanvas - startCanvas;
 
       const sliceCanvas = document.createElement('canvas');
       sliceCanvas.width = canvas.width;
@@ -612,7 +611,7 @@ async function renderPdfFromPreview(baseFileName) {
       sliceCtx.drawImage(
         canvas,
         0,
-        startDom * scaleFactor,
+        startCanvas,
         canvas.width,
         sliceHeightCanvas,
         0,
@@ -623,7 +622,7 @@ async function renderPdfFromPreview(baseFileName) {
 
       const imgData = sliceCanvas.toDataURL('image/png');
       const imgWidth = usableWidth;
-      const imgHeight = sliceHeightCanvas * (imgWidth / canvas.width);
+      const imgHeight = sliceHeightCanvas * pxToPtScale;
 
       pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
       if (i < breaks.length - 2) {
