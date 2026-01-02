@@ -658,33 +658,49 @@ async function handleDownloadHtmlBundled() {
 }
 
 function attachEvents() {
-  generatePdfButtons.forEach((btn) => btn.addEventListener('click', handleGenerate));
-  form.addEventListener('submit', (e) => e.preventDefault());
+  generatePdfButtons.forEach((btn) =>
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleGenerate();
+    })
+  );
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
   form.addEventListener('input', () => renderPreview());
 
   modeSelect?.addEventListener('change', () => renderPreview());
 
   previewButtons.forEach((button) => {
     if (button) {
-      button.addEventListener('click', renderPreview);
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        renderPreview();
+      });
     }
   });
 
-  addContactButton?.addEventListener('click', () => {
+  addContactButton?.addEventListener('click', (e) => {
+    e.preventDefault();
     addContactRow();
     renderPreview();
   });
 
-  downloadHtmlButton?.addEventListener('click', () => {
+  downloadHtmlButton?.addEventListener('click', (e) => {
+    e.preventDefault();
     handleDownloadHtml();
   });
 
-  downloadHtmlBundledButton?.addEventListener('click', () => {
+  downloadHtmlBundledButton?.addEventListener('click', (e) => {
+    e.preventDefault();
     handleDownloadHtmlBundled();
   });
 
   contactsContainer.addEventListener('click', (event) => {
     if (event.target.classList.contains('remove-contact')) {
+      event.preventDefault();
       if (contactsContainer.children.length > 1) {
         event.target.closest('.contact-row').remove();
         renderPreview();
