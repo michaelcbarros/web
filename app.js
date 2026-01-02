@@ -516,39 +516,71 @@ function handleGenerate(event) {
 
 async function renderPdfFromPreview(baseFileName) {
   const target = document.getElementById('pdf-preview');
+  if (!target) {
+    console.error('PDF preview element not found.');
+    return;
+  }
+  if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+    console.error('PDF libraries missing (html2canvas/jsPDF).');
+    return;
+  }
+
+  // Clone preview to control export width without affecting UI
+  const clone = target.cloneNode(true);
+  clone.style.width = '780px'; // ~7.5in at 104dpi-ish for stability
+  clone.style.position = 'absolute';
+  clone.style.left = '-9999px';
+  clone.style.top = '0';
+  clone.style.pointerEvents = 'none';
+  document.body.appendChild(clone);
 
   try {
-    const canvas = await html2canvas(target, {
-      scale: 3,
+    const canvas = await window.html2canvas(clone, {
+      scale: 2,
       useCORS: true,
       scrollY: -window.scrollY
     });
 
     const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'letter' });
+    const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter', compress: true });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 24;
-    const renderableWidth = pageWidth - margin * 2;
-    const renderableHeight = pageHeight - margin * 2;
-    const scale = Math.min(renderableWidth / canvas.width, renderableHeight / canvas.height);
-    const outputWidth = canvas.width * scale;
-    const outputHeight = canvas.height * scale;
+    const margin = 36; // 0.5 inch
+    const usableWidth = pageWidth - margin * 2;
+    const usableHeight = pageHeight - margin * 2;
+    const scale = usableWidth / canvas.width;
+    const imgWidth = usableWidth;
+    const imgHeight = canvas.height * scale;
 
-    pdf.addImage(
-      imgData,
-      'PNG',
-      (pageWidth - outputWidth) / 2,
-      margin,
-      outputWidth,
-      outputHeight,
-      undefined,
-      'FAST'
-    );
+    let remainingHeight = imgHeight;
+    let position = margin;
+    let pageIndex = 0;
+
+    while (remainingHeight > 0) {
+      const renderHeight = Math.min(usableHeight, remainingHeight);
+      const offsetY = margin - pageIndex * usableHeight;
+      pdf.addImage(
+        imgData,
+        'PNG',
+        margin,
+        offsetY,
+        imgWidth,
+        imgHeight,
+        undefined,
+        'FAST'
+      );
+      remainingHeight -= usableHeight;
+      pageIndex += 1;
+      if (remainingHeight > 0) {
+        pdf.addPage();
+      }
+    }
+
     pdf.save(`${baseFileName}.pdf`);
   } catch (err) {
-    console.error('PDF generation failed, falling back to browser print.', err);
-    window.print();
+    console.error('PDF generation failed.', err);
+  } finally {
+    document.body.removeChild(clone);
   }
 }
 
