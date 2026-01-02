@@ -85,11 +85,15 @@ function groupFields(rows) {
   return `<div class="field-group">${filtered.join('')}</div>`;
 }
 
-function buildSection(title, fieldsHtml) {
+function buildSection(title, fieldsHtml, options = {}) {
+  const { className = '', multiColumn = false } = options;
+  const sectionClass = className ? `pdf-section ${className}` : 'pdf-section';
+  const bodyClass = multiColumn ? 'section-body columns' : 'section-body';
+
   return `
-    <section class="pdf-section">
+    <section class="${sectionClass}">
       <h3>${title}</h3>
-      ${fieldsHtml}
+      <div class="${bodyClass}">${fieldsHtml}</div>
     </section>
   `;
 }
@@ -114,17 +118,19 @@ function buildContactsTable(contacts) {
   return `
     <section class="pdf-section">
       <h3>Contacts</h3>
-      <table class="contacts-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Role</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+      <div class="section-body">
+        <table class="contacts-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
     </section>
   `;
 }
@@ -184,9 +190,9 @@ function renderPreview(passedData) {
     <div class="pdf-title">
       ${valueOrPlaceholder(data.eventName, { multiline: false })}
     </div>
-    <div class="pdf-subtitle">${valueOrPlaceholder(data.eventDate, { multiline: false })}</div>
-    <div class="pdf-subtitle">${valueOrPlaceholder(data.venueName, { multiline: false })}</div>
-    <div class="pdf-subtitle">${valueOrPlaceholder(venueAddress, { multiline: false })}</div>
+    <div class="pdf-date">${valueOrPlaceholder(data.eventDate, { multiline: false })}</div>
+    <div class="pdf-venue">${valueOrPlaceholder(data.venueName, { multiline: false })}</div>
+    <div class="pdf-address">${valueOrPlaceholder(venueAddress, { multiline: false })}</div>
   `;
 
   const headerSection = buildSection(
@@ -203,7 +209,8 @@ function renderPreview(passedData) {
       buildField('Promoter', data.promoterName, { mode }),
       buildField('Show Type', data.showType, { mode }),
       buildField('Venue Capacity', data.capacity, { mode })
-    ])
+    ]),
+    { className: 'section-spacing' }
   );
 
   const atAGlanceSection = buildSection(
@@ -226,7 +233,8 @@ function renderPreview(passedData) {
         buildField('Box Office Lead', data.keyBoxOfficeLead, { mode }),
         buildField('Artist Tour Manager / Advancing', data.keyTourManager, { mode }),
         buildField('FOH Engineer', data.keyFohEngineer, { mode })
-      ])
+      ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const eventDetailsSection = buildSection(
@@ -236,7 +244,8 @@ function renderPreview(passedData) {
       buildField('On-Sale Date / Time', data.onSaleDateTime, { mode }),
       buildField('Event Date(s)', data.eventDates, { mode }),
       buildField('Doors / ROS Line', data.doorsRos, { mode })
-    ])
+    ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const scheduleSection = buildSection(
@@ -249,7 +258,8 @@ function renderPreview(passedData) {
       buildField('Set Lengths (Support / Headliner)', data.setLengths, { mode }),
       buildField('Curfew / Hard Out', data.curfew, { mode }),
       buildField('Load-out', data.loadOutTime, { mode })
-    ])
+    ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const talentSection = buildSection(
@@ -283,7 +293,8 @@ function renderPreview(passedData) {
       buildField('On-Sale Date / Time', data.onSaleDateTime, { mode }),
       buildField('Door Price', data.doorPrice, { mode, internalOnly: true }),
       buildField('ADA Needs', data.adaNeeds, { mode })
-    ])
+    ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const loadInSection = buildSection(
@@ -293,7 +304,8 @@ function renderPreview(passedData) {
       buildField('Dock / Ramp Notes', data.dockNotes, { mode }),
       buildField('Parking Instructions', data.parkingInstructions, { mode }),
       buildField('Credentials / Access Notes', data.accessNotes, { mode })
-    ])
+    ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const houseSection = buildSection(
@@ -318,12 +330,14 @@ function renderPreview(passedData) {
       buildField('Meal Times', data.mealTimes, { mode }),
       buildField('Dietary Restrictions', data.dietaryRestrictions, { mode }),
       buildField('Meal Location', data.mealLocation, { mode })
-    ])
+    ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const transportationSection = buildSection(
     'Transportation',
-    groupFields([buildField('Transportation Notes', data.transportationNotes, { mode })])
+    groupFields([buildField('Transportation Notes', data.transportationNotes, { mode })]),
+    { className: 'section-spacing' }
   );
 
   const merchandiseSection = buildSection(
@@ -334,7 +348,8 @@ function renderPreview(passedData) {
       buildField('Cashless Policy', data.cashlessPolicy, { mode }),
       buildField('Staffing', data.merchStaffing, { mode }),
       buildField('Merch Split %', data.merchSplit, { mode, internalOnly: true })
-    ])
+    ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const lodgingSection = buildSection(
@@ -345,7 +360,8 @@ function renderPreview(passedData) {
       buildField('Property Name', lodgingValue(data.propertyName), { mode }),
       buildField('Check-in / Check-out', lodgingValue(data.checkInCheckOut), { mode }),
       buildField('Names / Confirmation Numbers', lodgingValue(data.namesConfirmations), { mode })
-    ])
+    ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const securitySection = buildSection(
@@ -358,7 +374,8 @@ function renderPreview(passedData) {
       buildCheckboxRow('Barricade Security', data.barricadeSecurity, { mode }),
       buildField('Artist Escort Policy', data.artistEscortPolicy, { mode }),
       buildField('Emergency Procedures', data.emergencyProcedures, { mode })
-    ])
+    ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const productionSection = buildSection(
@@ -368,29 +385,30 @@ function renderPreview(passedData) {
       buildField('Drum Riser / Platforms', data.stagePlatforms, { mode }),
       buildField('Lighting / Haze', data.lightingHaze, { mode })
     ]) +
-    groupFields([
-      buildField('Rigging', data.linesetRigging, { mode }),
-      buildField('Plot', data.plot, { mode })
-    ]) +
-    groupFields([
-      buildField('Audio - Band Provides', data.audioBackline, { mode }),
-      buildField('Audio - Venue Provides', data.productionOther, {
-        mode,
-        hideIfEmptyInProduction: true
-      }),
-      buildField('Audio Notes', data.productionNotes, { mode })
-    ]) +
-    groupFields([
-      buildField('Video Streaming', data.videoStreaming, { mode, hideIfEmptyInProduction: true }),
-      buildField('Piano / Tuning', data.pianoTuning, {
-        mode,
-        hideIfEmptyInProduction: true
-      })
-    ]) +
-    groupFields([
-      buildField('Crew - They Bring', data.crewTheyBring, { mode }),
-      buildField('Crew - We Provide', data.crewWeProvide, { mode })
-    ])
+      groupFields([
+        buildField('Rigging', data.linesetRigging, { mode }),
+        buildField('Plot', data.plot, { mode })
+      ]) +
+      groupFields([
+        buildField('Audio - Band Provides', data.audioBackline, { mode }),
+        buildField('Audio - Venue Provides', data.productionOther, {
+          mode,
+          hideIfEmptyInProduction: true
+        }),
+        buildField('Audio Notes', data.productionNotes, { mode })
+      ]) +
+      groupFields([
+        buildField('Video Streaming', data.videoStreaming, { mode, hideIfEmptyInProduction: true }),
+        buildField('Piano / Tuning', data.pianoTuning, {
+          mode,
+          hideIfEmptyInProduction: true
+        })
+      ]) +
+      groupFields([
+        buildField('Crew - They Bring', data.crewTheyBring, { mode }),
+        buildField('Crew - We Provide', data.crewWeProvide, { mode })
+      ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const settlementSection =
@@ -402,12 +420,14 @@ function renderPreview(passedData) {
             buildField('Who Attends', data.settlementAttendees, { mode }) +
             buildField('Paperwork Required', data.settlementPaperwork, { mode }) +
             buildField('Payment Method', data.settlementPaymentMethod, { mode }) +
-            buildField('Cut-off Time', data.settlementCutoff, { mode })
+            buildField('Cut-off Time', data.settlementCutoff, { mode }),
+          { className: 'section-spacing' }
         );
 
   const nextTimeSection = buildSection(
     'Next Time Notes',
-    buildField('Notes', data.nextTimeNotes, { mode })
+    buildField('Notes', data.nextTimeNotes, { mode }),
+    { className: 'section-spacing' }
   );
 
   const contactsSection = buildContactsTable(data.contacts);

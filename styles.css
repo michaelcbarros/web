@@ -6,7 +6,7 @@
   --border: #e2e8f0;
   --border-strong: #cbd5e1;
   --accent: #c53030;
-  --label: #64748b;
+  --label: #6b7280;
 }
 
 *,
@@ -213,7 +213,7 @@ button.small {
   border-radius: 0;
   padding: 18px;
   min-height: 11in;
-  width: 7.25in;
+  width: 7.35in;
   max-width: 100%;
   margin: 0 auto;
 }
@@ -226,16 +226,32 @@ button.small {
 
 .pdf-title {
   text-align: center;
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 700;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
 }
 
-.pdf-subtitle {
+.pdf-date {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 6px;
+}
+
+.pdf-venue {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.pdf-address {
   text-align: center;
   font-size: 11px;
-  color: var(--muted);
-  margin-bottom: 8px;
+  color: #4b5563;
+  margin-bottom: 10px;
 }
 
 .pdf-preview {
@@ -244,18 +260,31 @@ button.small {
 }
 
 .pdf-section {
-  margin-top: 10px;
-  padding-top: 5px;
-  border-top: 1px solid rgba(197, 48, 48, 0.28);
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
   page-break-inside: avoid;
 }
 
 .pdf-section h3 {
-  font-size: 11px;
-  margin-bottom: 6px;
+  font-size: 11.5px;
+  margin: 0 0 8px;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--accent);
+  border-bottom: 1px solid rgba(197, 48, 48, 0.25);
+  padding-bottom: 6px;
+}
+
+.section-body {
+  display: block;
+}
+
+.section-body.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px 16px;
 }
 
 .field-group + .field-group {
@@ -286,6 +315,10 @@ button.small {
 .value-text.multiline {
   display: block;
   padding-left: 2px;
+}
+
+.section-spacing {
+  margin-top: 18px;
 }
 
 .checkbox-set {
@@ -374,7 +407,7 @@ button.small {
 
   @page {
     size: letter;
-    margin: 0.65in;
+    margin: 0.75in 0.6in;
   }
 
   body {
