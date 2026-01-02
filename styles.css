@@ -211,23 +211,24 @@ button.small {
   background: #fff;
   border: none;
   border-radius: 0;
-  padding: 18px;
+  padding: 22px;
   min-height: 11in;
-  width: 7.2in;
+  width: 7.5in;
   max-width: 100%;
   margin: 0 auto;
 }
 
 .header-bar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 8px;
+  position: relative;
 }
 
 .logo-slot {
-  width: 25%;
-  min-height: 10px;
+  width: 120px;
+  min-height: 32px;
 }
 
 .logo-slot.logo-right {
@@ -235,7 +236,7 @@ button.small {
 }
 
 .brand-img {
-  max-height: 48px;
+  max-height: 32px;
   width: auto;
   object-fit: contain;
 }
@@ -302,7 +303,10 @@ button.small {
   letter-spacing: 0.01em;
   color: var(--accent);
   border-bottom: 1px solid rgba(197, 48, 48, 0.25);
-  padding-bottom: 6px;
+  padding: 6px 10px;
+  margin: -12px -14px 10px;
+  border-radius: 6px 6px 0 0;
+  background: #fff6f6;
 }
 
 .section-body {
