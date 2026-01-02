@@ -527,11 +527,41 @@ async function renderPdfFromPreview(baseFileName) {
 
   // Clone preview to control export width without affecting UI
   const clone = target.cloneNode(true);
-  clone.style.width = '780px'; // ~7.5in equivalent for letter usable width
+  clone.style.width = '760px'; // ~7.5in usable width at 96dpi-ish
+  clone.style.maxWidth = '760px';
+  clone.style.padding = '22px';
   clone.style.position = 'absolute';
   clone.style.left = '-9999px';
   clone.style.top = '0';
   clone.style.pointerEvents = 'none';
+
+  // Apply export-only tweaks inline to avoid stale cached CSS
+  clone.querySelectorAll('.brand-img').forEach((img) => {
+    img.style.maxHeight = '26px';
+    img.style.width = 'auto';
+  });
+  clone.querySelectorAll('.logo-slot').forEach((slot) => {
+    slot.style.width = '100px';
+    slot.style.minHeight = '28px';
+  });
+  const headerBar = clone.querySelector('.header-bar');
+  if (headerBar) {
+    headerBar.style.justifyContent = 'center';
+    headerBar.style.alignItems = 'flex-start';
+    headerBar.style.position = 'relative';
+    headerBar.style.minHeight = '32px';
+  }
+  clone.querySelectorAll('.pdf-section h3').forEach((h3) => {
+    h3.style.background = '#fff6f6';
+    h3.style.padding = '6px 10px';
+    h3.style.margin = '-12px -14px 10px';
+    h3.style.borderRadius = '6px 6px 0 0';
+  });
+  clone.querySelectorAll('.pdf-section').forEach((section) => {
+    section.style.pageBreakInside = 'avoid';
+    section.style.breakInside = 'avoid';
+  });
+
   document.body.appendChild(clone);
 
   try {
