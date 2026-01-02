@@ -610,6 +610,15 @@ function attachEvents() {
 }
 
 function init() {
+  console.log('Didactidigital advance app entrypoint:', import.meta.url, {
+    html2canvas: typeof html2canvas,
+    jsPDF: typeof jsPDF
+  });
+  if (!form) {
+    console.warn('#advance-form not found; event bindings skipped.');
+    return;
+  }
+
   // Autofill venue defaults if empty
   if (!form.eventName.value) form.eventName.value = '';
   if (!form.venueName.value) form.venueName.value = 'LECOM Event Center';
@@ -622,6 +631,29 @@ function init() {
 
   attachEvents();
   renderPreview();
+  console.log('Didactidigital advance app initialized');
 }
 
-init();
+function showBootError(error) {
+  console.error('Boot error', error);
+  const banner = document.createElement('div');
+  banner.textContent = 'Boot error: PDF builder failed to start';
+  banner.style.position = 'fixed';
+  banner.style.bottom = '12px';
+  banner.style.right = '12px';
+  banner.style.background = '#b91c1c';
+  banner.style.color = '#fff';
+  banner.style.padding = '8px 12px';
+  banner.style.borderRadius = '6px';
+  banner.style.fontSize = '12px';
+  banner.style.zIndex = '9999';
+  document.body.appendChild(banner);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    init();
+  } catch (error) {
+    showBootError(error);
+  }
+});
