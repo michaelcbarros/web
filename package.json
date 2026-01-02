@@ -16,5 +16,9 @@
   "author": "Didactidigital",
   "license": "MIT",
   "type": "commonjs",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1"
+  }
 }
