@@ -1,5 +1,4 @@
-import { jsPDF } from './node_modules/jspdf/dist/jspdf.umd.min.js';
-import html2canvas from './node_modules/html2canvas/dist/html2canvas.min.js';
+console.log('app.js loaded');
 
 const form = document.getElementById('advance-form');
 const preview = document.getElementById('pdf-preview');
@@ -610,10 +609,7 @@ function attachEvents() {
 }
 
 function init() {
-  console.log('Didactidigital advance app entrypoint:', import.meta.url, {
-    html2canvas: typeof html2canvas,
-    jsPDF: typeof jsPDF
-  });
+  console.log('init ran');
   if (!form) {
     console.warn('#advance-form not found; event bindings skipped.');
     return;
@@ -631,7 +627,10 @@ function init() {
 
   attachEvents();
   renderPreview();
-  console.log('Didactidigital advance app initialized');
+  console.log(
+    'Didactidigital advance app initialized; buttons bound:',
+    generatePdfButtons.length
+  );
 }
 
 function showBootError(error) {
