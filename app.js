@@ -1,3 +1,5 @@
+console.log('app.js loaded');
+
 const form = document.getElementById('advance-form');
 const preview = document.getElementById('pdf-preview');
 const addContactButton = document.getElementById('add-contact');
@@ -514,39 +516,126 @@ function handleGenerate(event) {
 
 async function renderPdfFromPreview(baseFileName) {
   const target = document.getElementById('pdf-preview');
-  if (!window.html2canvas || !window.jspdf) {
-    alert('PDF renderer not available. Please check network access to load html2canvas and jsPDF.');
+  if (!target) {
+    console.error('PDF preview element not found.');
+    return;
+  }
+  if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+    console.error('PDF libraries missing (html2canvas/jsPDF).');
     return;
   }
 
-  const canvas = await window.html2canvas(target, {
-    scale: 3,
-    useCORS: true,
-    scrollY: -window.scrollY
+  // Clone preview to control export width without affecting UI
+  const clone = target.cloneNode(true);
+  clone.style.width = '760px'; // ~7.5in usable width at 96dpi-ish
+  clone.style.maxWidth = '760px';
+  clone.style.padding = '22px';
+  clone.style.position = 'absolute';
+  clone.style.left = '-9999px';
+  clone.style.top = '0';
+  clone.style.pointerEvents = 'none';
+
+  // Apply export-only tweaks inline to avoid stale cached CSS
+  clone.querySelectorAll('.brand-img').forEach((img) => {
+    img.style.maxHeight = '26px';
+    img.style.width = 'auto';
+  });
+  clone.querySelectorAll('.logo-slot').forEach((slot) => {
+    slot.style.width = '100px';
+    slot.style.minHeight = '28px';
+  });
+  const headerBar = clone.querySelector('.header-bar');
+  if (headerBar) {
+    headerBar.style.justifyContent = 'center';
+    headerBar.style.alignItems = 'flex-start';
+    headerBar.style.position = 'relative';
+    headerBar.style.minHeight = '32px';
+  }
+  clone.querySelectorAll('.pdf-section h3').forEach((h3) => {
+    h3.style.background = '#fff6f6';
+    h3.style.padding = '6px 10px';
+    h3.style.margin = '-12px -14px 10px';
+    h3.style.borderRadius = '6px 6px 0 0';
+  });
+  clone.querySelectorAll('.pdf-section').forEach((section) => {
+    section.style.pageBreakInside = 'avoid';
+    section.style.breakInside = 'avoid';
   });
 
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter' });
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 24;
-  const renderableWidth = pageWidth - margin * 2;
-  const renderableHeight = pageHeight - margin * 2;
-  const scale = Math.min(renderableWidth / canvas.width, renderableHeight / canvas.height);
-  const outputWidth = canvas.width * scale;
-  const outputHeight = canvas.height * scale;
+  document.body.appendChild(clone);
 
-  pdf.addImage(
-    imgData,
-    'PNG',
-    (pageWidth - outputWidth) / 2,
-    margin,
-    outputWidth,
-    outputHeight,
-    undefined,
-    'FAST'
-  );
-  pdf.save(`${baseFileName}.pdf`);
+  try {
+    const canvas = await window.html2canvas(clone, {
+      scale: 2,
+      useCORS: true,
+      scrollY: -window.scrollY
+    });
+
+    const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter', compress: true });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 36; // 0.5 inch
+    const usableWidth = pageWidth - margin * 2;
+    const usableHeight = pageHeight - margin * 2;
+
+    // Relationship between canvas px and PDF pts
+    const pxToPtScale = usableWidth / canvas.width;
+    const usableHeightCanvas = usableHeight / pxToPtScale; // in canvas px
+
+    // Calculate page breaks based on section boundaries (canvas space)
+    const sections = Array.from(clone.querySelectorAll('.pdf-section'));
+    const cloneRect = clone.getBoundingClientRect();
+    const breaks = [0];
+    sections.forEach((section) => {
+      const rect = section.getBoundingClientRect();
+      const topCanvas = (rect.top - cloneRect.top) * (canvas.width / clone.offsetWidth);
+      const heightCanvas = rect.height * (canvas.width / clone.offsetWidth);
+      const sectionBottom = topCanvas + heightCanvas;
+      if (sectionBottom - breaks[breaks.length - 1] > usableHeightCanvas) {
+        // start new page at this section top
+        breaks.push(topCanvas);
+      }
+    });
+    // Add final end
+    breaks.push(canvas.height);
+
+    for (let i = 0; i < breaks.length - 1; i++) {
+      const startCanvas = breaks[i];
+      const endCanvas = breaks[i + 1];
+      const sliceHeightCanvas = endCanvas - startCanvas;
+
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = sliceHeightCanvas;
+      const sliceCtx = sliceCanvas.getContext('2d');
+      sliceCtx.drawImage(
+        canvas,
+        0,
+        startCanvas,
+        canvas.width,
+        sliceHeightCanvas,
+        0,
+        0,
+        canvas.width,
+        sliceHeightCanvas
+      );
+
+      const imgData = sliceCanvas.toDataURL('image/png');
+      const imgWidth = usableWidth;
+      const imgHeight = sliceHeightCanvas * pxToPtScale;
+
+      pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
+      if (i < breaks.length - 2) {
+        pdf.addPage();
+      }
+    }
+
+    pdf.save(`${baseFileName}.pdf`);
+  } catch (err) {
+    console.error('PDF generation failed.', err);
+  } finally {
+    document.body.removeChild(clone);
+  }
 }
 
 function attachEvents() {
@@ -606,6 +695,12 @@ function attachEvents() {
 }
 
 function init() {
+  console.log('init ran');
+  if (!form) {
+    console.warn('#advance-form not found; event bindings skipped.');
+    return;
+  }
+
   // Autofill venue defaults if empty
   if (!form.eventName.value) form.eventName.value = '';
   if (!form.venueName.value) form.venueName.value = 'LECOM Event Center';
@@ -618,6 +713,32 @@ function init() {
 
   attachEvents();
   renderPreview();
+  console.log(
+    'Didactidigital advance app initialized; buttons bound:',
+    generatePdfButtons.length
+  );
 }
 
-init();
+function showBootError(error) {
+  console.error('Boot error', error);
+  const banner = document.createElement('div');
+  banner.textContent = 'Boot error: PDF builder failed to start';
+  banner.style.position = 'fixed';
+  banner.style.bottom = '12px';
+  banner.style.right = '12px';
+  banner.style.background = '#b91c1c';
+  banner.style.color = '#fff';
+  banner.style.padding = '8px 12px';
+  banner.style.borderRadius = '6px';
+  banner.style.fontSize = '12px';
+  banner.style.zIndex = '9999';
+  document.body.appendChild(banner);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    init();
+  } catch (error) {
+    showBootError(error);
+  }
+});
