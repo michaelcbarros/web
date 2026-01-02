@@ -9,6 +9,7 @@ const previewButtons = [
 ];
 const downloadHtmlButton = document.getElementById('download-html');
 const downloadHtmlBundledButton = document.getElementById('download-html-bundled');
+const generatePdfButton = document.getElementById('generate-pdf');
 let cachedStyles = '';
 
 function escapeHtml(value = '') {
@@ -497,7 +498,7 @@ function addContactRow(values = { name: '', email: '', phone: '', role: '' }) {
 }
 
 function handleGenerate(event) {
-  event.preventDefault();
+  event?.preventDefault();
   const data = collectFormData();
   renderPreview(data);
   const fileName = `${buildFileName(data)}.pdf`;
@@ -650,7 +651,8 @@ async function handleDownloadHtmlBundled() {
 }
 
 function attachEvents() {
-  form.addEventListener('submit', handleGenerate);
+  generatePdfButton?.addEventListener('click', handleGenerate);
+  form.addEventListener('submit', (e) => e.preventDefault());
   form.addEventListener('input', () => renderPreview());
 
   modeSelect?.addEventListener('change', () => renderPreview());
@@ -685,6 +687,12 @@ function attachEvents() {
 }
 
 function init() {
+  // Autofill venue defaults if empty
+  if (!form.eventName.value) form.eventName.value = '';
+  if (!form.venueName.value) form.venueName.value = 'LECOM Event Center';
+  if (!form.venueStreet.value) form.venueStreet.value = '155 N Main St';
+  if (!form.venueCityStateZip.value) form.venueCityStateZip.value = 'Elmira, NY 14901';
+
   if (contactsContainer.children.length === 0) {
     addContactRow();
   }
