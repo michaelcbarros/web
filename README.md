@@ -15,7 +15,7 @@ Prerequisites: `wkhtmltopdf` (wkhtmltox) installed on your system.
 ```bash
 go mod tidy
 go run server.go
-# visit http://localhost:8080 for the existing UI; POST to /api/pdf to download a PDF
+# visit http://localhost:8080 for the existing UI; the Generate PDF button POSTs to /api/pdf to download a PDF
 ```
 
 ### Docker (recommended)

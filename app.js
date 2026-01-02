@@ -497,16 +497,33 @@ function handleGenerate(event) {
   event.preventDefault();
   const data = collectFormData();
   renderPreview(data);
-  const previousTitle = document.title;
-  const fileName = buildFileName(data);
-  document.title = fileName;
+  const fileName = `${buildFileName(data)}.pdf`;
 
-  requestAnimationFrame(() => {
-    window.print();
-    setTimeout(() => {
-      document.title = previousTitle;
-    }, 150);
-  });
+  fetch('/api/pdf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+      return res.blob();
+    })
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    })
+    .catch((err) => {
+      console.error(err);
+      alert('Unable to generate PDF. Please try again.');
+    });
 }
 
 function attachEvents() {
