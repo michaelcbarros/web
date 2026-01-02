@@ -27,8 +27,6 @@
           </label>
           <button type="button" id="generate-pdf" class="primary generate-pdf">Generate PDF</button>
           <button type="button" id="preview-button" class="ghost">Refresh Preview</button>
-          <button type="button" id="download-html" class="ghost">Download HTML</button>
-          <button type="button" id="download-html-bundled" class="ghost">Download Self-Contained HTML</button>
         </div>
       </header>
 
@@ -617,6 +615,9 @@
       </main>
     </div>
 
+    <!-- PDF rendering helpers -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

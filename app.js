@@ -509,153 +509,36 @@ function handleGenerate(event) {
   event?.stopPropagation();
   const data = collectFormData();
   renderPreview(data);
-  const fileName = `${buildFileName(data)}.pdf`;
-
-  fetch('/api/pdf', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error('Failed to generate PDF');
-      }
-      return res.blob();
-    })
-    .then((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    })
-    .catch((err) => {
-      console.error(err);
-      alert('Unable to generate PDF via /api/pdf. Ensure the Go server is running on this origin. As a fallback, use “Download HTML” or “Download Self-Contained HTML.”');
-    });
+  renderPdfFromPreview(buildFileName(data));
 }
 
-async function ensureStyles() {
-  if (cachedStyles) return cachedStyles;
-  try {
-    const res = await fetch('styles.css', { cache: 'no-store' });
-    cachedStyles = await res.text();
-  } catch (err) {
-    console.error('Failed to load styles.css', err);
-    cachedStyles = '';
+async function renderPdfFromPreview(baseFileName) {
+  const target = document.getElementById('pdf-preview');
+  if (!window.html2canvas || !window.jspdf) {
+    alert('PDF renderer not available. Please check network access to load html2canvas and jsPDF.');
+    return;
   }
-  return cachedStyles;
-}
 
-async function handleDownloadHtml() {
-  const data = collectFormData();
-  renderPreview(data);
-  const markup = preview.innerHTML;
-  const styles = await ensureStyles();
-  const fileName = `${buildFileName(data)}.html`;
+  const canvas = await window.html2canvas(target, {
+    scale: 2,
+    useCORS: true,
+    scrollY: -window.scrollY
+  });
 
-  const doc = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${buildFileName(data)}</title>
-  <style>
-  ${styles}
-  </style>
-</head>
-<body>
-  <div class="app-shell">
-    <div class="layout">
-      <section class="preview-panel">
-        <div id="pdf-preview" class="pdf-preview">
-          ${markup}
-        </div>
-      </section>
-    </div>
-  </div>
-</body>
-</html>`;
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new window.jspdf.jsPDF({ unit: 'pt', format: 'letter', orientation: 'p' });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
 
-  const blob = new Blob([doc], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
+  const imgWidth = pageWidth;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+  const finalWidth = imgWidth * ratio;
+  const finalHeight = imgHeight * ratio;
+  const marginTop = 12;
 
-async function fetchImageBase64(path) {
-  try {
-    const res = await fetch(path, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const blob = await res.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  } catch (err) {
-    console.warn(`Inline image failed for ${path}:`, err);
-    return '';
-  }
-}
-
-async function handleDownloadHtmlBundled() {
-  const data = collectFormData();
-  renderPreview(data);
-  const markup = preview.innerHTML;
-  const styles = await ensureStyles();
-  const fileName = `${buildFileName(data)}_bundled.html`;
-
-  const [oydData, lecomData] = await Promise.all([
-    fetchImageBase64('oyd.png'),
-    fetchImageBase64('lecom.png')
-  ]);
-
-  const inlineMarkup = markup
-    .replace(/src="\\.\\/oyd.png"/g, oydData ? `src="${oydData}"` : 'src=""')
-    .replace(/src="\\.\\/lecom.png"/g, lecomData ? `src="${lecomData}"` : 'src=""');
-
-  const doc = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${buildFileName(data)}</title>
-  <style>
-  ${styles}
-  </style>
-</head>
-<body>
-  <div class="app-shell">
-    <div class="layout">
-      <section class="preview-panel">
-        <div id="pdf-preview" class="pdf-preview">
-          ${inlineMarkup}
-        </div>
-      </section>
-    </div>
-  </div>
-</body>
-</html>`;
-
-  const blob = new Blob([doc], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  pdf.addImage(imgData, 'PNG', (pageWidth - finalWidth) / 2, marginTop, finalWidth, finalHeight, undefined, 'FAST');
+  pdf.save(`${baseFileName}.pdf`);
 }
 
 function attachEvents() {
