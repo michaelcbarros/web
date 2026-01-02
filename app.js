@@ -526,15 +526,26 @@ async function renderPdfFromPreview(baseFileName) {
   });
 
   const imgData = canvas.toDataURL('image/png');
-  const renderWidth = target.scrollWidth;
-  const renderHeight = target.scrollHeight;
-  const pdf = new window.jspdf.jsPDF({
-    orientation: renderWidth >= renderHeight ? 'l' : 'p',
-    unit: 'px',
-    format: [renderWidth, renderHeight]
-  });
+  const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter' });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 24;
+  const renderableWidth = pageWidth - margin * 2;
+  const renderableHeight = pageHeight - margin * 2;
+  const scale = Math.min(renderableWidth / canvas.width, renderableHeight / canvas.height);
+  const outputWidth = canvas.width * scale;
+  const outputHeight = canvas.height * scale;
 
-  pdf.addImage(imgData, 'PNG', 0, 0, renderWidth, renderHeight, undefined, 'FAST');
+  pdf.addImage(
+    imgData,
+    'PNG',
+    (pageWidth - outputWidth) / 2,
+    margin,
+    outputWidth,
+    outputHeight,
+    undefined,
+    'FAST'
+  );
   pdf.save(`${baseFileName}.pdf`);
 }
 
