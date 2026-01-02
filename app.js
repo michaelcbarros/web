@@ -12,6 +12,8 @@ const downloadHtmlBundledButton = document.getElementById('download-html-bundled
 const generatePdfButton = document.getElementById('generate-pdf');
 let cachedStyles = '';
 
+const NA_VALUE = 'N/A';
+
 function escapeHtml(value = '') {
   return value
     .replace(/&/g, '&amp;')
@@ -25,12 +27,12 @@ function valueOrPlaceholder(value, { multiline = true } = {}) {
   const raw = (value || '').trim();
 
   if (!raw) {
-    return '<span class="value-text">TBD</span>';
+    return `<span class="value-text">${NA_VALUE}</span>`;
   }
 
   const normalized = raw.toLowerCase();
   if (normalized === 'n/a' || normalized === 'na' || normalized === 'not applicable') {
-    return '<span class="value-text">N/A</span>';
+    return `<span class="value-text">${NA_VALUE}</span>`;
   }
 
   const safe = escapeHtml(raw);
@@ -144,10 +146,10 @@ function collectContacts() {
 
   contactsContainer.querySelectorAll('.contact-row').forEach((row) => {
     contacts.push({
-      name: row.querySelector('[data-contact="name"]').value.trim(),
-      email: row.querySelector('[data-contact="email"]').value.trim(),
-      phone: row.querySelector('[data-contact="phone"]').value.trim(),
-      role: row.querySelector('[data-contact="role"]').value.trim()
+      name: row.querySelector('[data-contact="name"]').value.trim() || NA_VALUE,
+      email: row.querySelector('[data-contact="email"]').value.trim() || NA_VALUE,
+      phone: row.querySelector('[data-contact="phone"]').value.trim() || NA_VALUE,
+      role: row.querySelector('[data-contact="role"]').value.trim() || NA_VALUE
     });
   });
 
@@ -157,6 +159,11 @@ function collectContacts() {
 function collectFormData() {
   const formData = new FormData(form);
   const data = Object.fromEntries(formData.entries());
+  Object.keys(data).forEach((k) => {
+    if (!String(data[k]).trim()) {
+      data[k] = NA_VALUE;
+    }
+  });
   data.contacts = collectContacts();
   data.mode = modeSelect?.value || 'production';
   return data;

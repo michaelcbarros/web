@@ -25,7 +25,7 @@
               <option value="internal">Internal (show everything)</option>
             </select>
           </label>
-          <button type="button" id="generate-pdf" class="primary">Generate PDF</button>
+          <button type="button" id="generate-pdf" class="primary generate-pdf">Generate PDF</button>
           <button type="button" id="preview-button" class="ghost">Refresh Preview</button>
           <button type="button" id="download-html" class="ghost">Download HTML</button>
           <button type="button" id="download-html-bundled" class="ghost">Download Self-Contained HTML</button>
@@ -123,19 +123,19 @@
               <div class="form-grid">
                 <label class="input-field">
                   <span>Load-in Time</span>
-                  <input name="loadInTime" type="text" placeholder="e.g., 10:00 AM" />
+                  <input name="loadInTime" type="time" />
                 </label>
                 <label class="input-field">
                   <span>Soundcheck Time</span>
-                  <input name="soundcheckTime" type="text" placeholder="e.g., 2:00 PM" />
+                  <input name="soundcheckTime" type="time" />
                 </label>
                 <label class="input-field">
                   <span>Doors Time</span>
-                  <input name="doorsTime" type="text" placeholder="e.g., 6:00 PM" />
+                  <input name="doorsTime" type="time" />
                 </label>
                 <label class="input-field">
                   <span>Show Start Time</span>
-                  <input name="showStartTime" type="text" placeholder="e.g., 7:30 PM" />
+                  <input name="showStartTime" type="time" />
                 </label>
                 <label class="input-field">
                   <span>Set Lengths (Support / Headliner)</span>
@@ -147,7 +147,7 @@
                 </label>
                 <label class="input-field">
                   <span>Load-out Time</span>
-                  <input name="loadOutTime" type="text" placeholder="e.g., 11:15 PM" />
+                  <input name="loadOutTime" type="time" />
                 </label>
               </div>
             </div>
@@ -345,7 +345,7 @@
                 </label>
                 <label class="input-field">
                   <span>Meal Times</span>
-                  <input name="mealTimes" type="text" placeholder="e.g., Between soundcheck" />
+                  <input name="mealTimes" type="time" />
                 </label>
                 <label class="input-field">
                   <span>Dietary Restrictions</span>

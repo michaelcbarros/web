@@ -120,7 +120,7 @@ func generatePDF(data map[string]string, contacts []contact) ([]byte, string, er
 		"val": func(key string) string {
 			s := strings.TrimSpace(data[key])
 			if s == "" {
-				return "TBD"
+				return "N/A"
 			}
 			if strings.EqualFold(s, "n/a") || strings.EqualFold(s, "na") {
 				return "N/A"
