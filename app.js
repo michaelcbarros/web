@@ -86,13 +86,13 @@ function groupFields(rows) {
 }
 
 function buildSection(title, fieldsHtml, options = {}) {
-  const { className = '', multiColumn = false } = options;
+  const { className = '', multiColumn = false, omitHeading = false } = options;
   const sectionClass = className ? `pdf-section ${className}` : 'pdf-section';
   const bodyClass = multiColumn ? 'section-body columns' : 'section-body';
 
   return `
     <section class="${sectionClass}">
-      <h3>${title}</h3>
+      ${omitHeading ? '' : `<h3>${title}</h3>`}
       <div class="${bodyClass}">${fieldsHtml}</div>
     </section>
   `;
@@ -195,13 +195,10 @@ function renderPreview(passedData) {
     <div class="pdf-address">${valueOrPlaceholder(venueAddress, { multiline: false })}</div>
   `;
 
-  const headerSection = buildSection(
-    'Header',
-    buildField('Event Name', data.eventName, { mode }) +
-      buildField('Event Date', data.eventDate, { mode }) +
-      buildField('Venue Name', data.venueName, { mode }) +
-      buildField('Venue Address', venueAddress, { mode })
-  );
+  const headerSection = buildSection('Header', headerBlock, {
+    className: 'section-spacing hero-section',
+    omitHeading: true
+  });
 
   const overviewSection = buildSection(
     'Event Overview',
@@ -278,7 +275,8 @@ function renderPreview(passedData) {
       buildField('Box Office Lead', data.keyBoxOfficeLead, { mode }),
       buildField('Artist Tour Manager / Advancing', data.keyTourManager, { mode }),
       buildField('FOH Engineer', data.keyFohEngineer, { mode })
-    ])
+    ]),
+    { className: 'section-spacing', multiColumn: true }
   );
 
   const ticketingSection = buildSection(
@@ -433,11 +431,14 @@ function renderPreview(passedData) {
   const contactsSection = buildContactsTable(data.contacts);
 
   preview.innerHTML = `
-    ${headerBlock}
-    ${headerSection}
-    ${overviewSection}
-    ${atAGlanceSection}
-    ${keyContactsSection}
+    <div class="top-grid">
+      ${headerSection}
+      ${overviewSection}
+    </div>
+    <div class="top-grid">
+      ${atAGlanceSection}
+      ${keyContactsSection}
+    </div>
     ${eventDetailsSection}
     ${scheduleSection}
     ${talentSection}
