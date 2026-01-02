@@ -514,32 +514,71 @@ function handleGenerate(event) {
   renderPdfFromPreview(data, buildFileName(data));
 }
 
-async function renderPdfFromPreview(payload, baseFileName) {
+async function renderPdfFromPreview(baseFileName) {
+  const target = document.getElementById('pdf-preview');
+  if (!target) {
+    console.error('PDF preview element not found.');
+    return;
+  }
+  if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+    console.error('PDF libraries missing (html2canvas/jsPDF).');
+    return;
+  }
+
+  // Clone preview to control export width without affecting UI
+  const clone = target.cloneNode(true);
+  clone.style.width = '780px'; // ~7.5in equivalent for letter usable width
+  clone.style.position = 'absolute';
+  clone.style.left = '-9999px';
+  clone.style.top = '0';
+  clone.style.pointerEvents = 'none';
+  document.body.appendChild(clone);
+
   try {
-    const res = await fetch('/api/pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const canvas = await window.html2canvas(clone, {
+      scale: 2,
+      useCORS: true,
+      scrollY: -window.scrollY
     });
 
-    if (!res.ok) {
-      console.error('PDF generation failed with status', res.status);
-      return;
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter', compress: true });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 36; // 0.5 inch
+    const usableWidth = pageWidth - margin * 2;
+    const usableHeight = pageHeight - margin * 2;
+    const scale = usableWidth / canvas.width;
+    const imgWidth = usableWidth;
+    const imgHeight = canvas.height * scale;
+
+    let remainingHeight = imgHeight;
+    let pageIndex = 0;
+
+    while (remainingHeight > 0) {
+      const offsetY = margin - pageIndex * usableHeight;
+      pdf.addImage(
+        imgData,
+        'PNG',
+        margin,
+        offsetY,
+        imgWidth,
+        imgHeight,
+        undefined,
+        'FAST'
+      );
+      remainingHeight -= usableHeight;
+      pageIndex += 1;
+      if (remainingHeight > 0) {
+        pdf.addPage();
+      }
     }
 
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const disposition = res.headers.get('Content-Disposition') || '';
-    const match = disposition.match(/filename=\"?([^\";]+)\"?/i);
-    const filename = (match && match[1]) || `${baseFileName}.pdf`;
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    window.URL.revokeObjectURL(url);
+    pdf.save(`${baseFileName}.pdf`);
   } catch (err) {
-    console.error('PDF generation request failed.', err);
+    console.error('PDF generation failed.', err);
+  } finally {
+    document.body.removeChild(clone);
   }
 }
 
