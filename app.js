@@ -511,7 +511,32 @@ function handleGenerate(event) {
   event?.stopPropagation();
   const data = collectFormData();
   renderPreview(data);
-  renderAdvancePDF(data, buildFileName(data));
+  downloadPdfFromServer(data);
+}
+
+async function downloadPdfFromServer(payload) {
+  const res = await fetch('/api/pdf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    alert('Unable to generate PDF. Please try again.');
+    return;
+  }
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const disposition = res.headers.get('Content-Disposition') || '';
+  const match = disposition.match(/filename=\"?([^\";]+)\"?/i);
+  const filename = (match && match[1]) || `${buildFileName(payload)}.pdf`;
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  window.URL.revokeObjectURL(url);
 }
 
 function attachEvents() {
