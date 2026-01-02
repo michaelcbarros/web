@@ -7,6 +7,8 @@ const previewButtons = [
   document.getElementById('preview-button'),
   document.getElementById('refresh-preview-footer')
 ];
+const downloadHtmlButton = document.getElementById('download-html');
+let cachedStyles = '';
 
 function escapeHtml(value = '') {
   return value
@@ -526,6 +528,59 @@ function handleGenerate(event) {
     });
 }
 
+async function ensureStyles() {
+  if (cachedStyles) return cachedStyles;
+  try {
+    const res = await fetch('styles.css', { cache: 'no-store' });
+    cachedStyles = await res.text();
+  } catch (err) {
+    console.error('Failed to load styles.css', err);
+    cachedStyles = '';
+  }
+  return cachedStyles;
+}
+
+async function handleDownloadHtml() {
+  const data = collectFormData();
+  renderPreview(data);
+  const markup = preview.innerHTML;
+  const styles = await ensureStyles();
+  const fileName = `${buildFileName(data)}.html`;
+
+  const doc = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${buildFileName(data)}</title>
+  <style>
+  ${styles}
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="layout">
+      <section class="preview-panel">
+        <div id="pdf-preview" class="pdf-preview">
+          ${markup}
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const blob = new Blob([doc], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function attachEvents() {
   form.addEventListener('submit', handleGenerate);
   form.addEventListener('input', () => renderPreview());
@@ -541,6 +596,10 @@ function attachEvents() {
   addContactButton?.addEventListener('click', () => {
     addContactRow();
     renderPreview();
+  });
+
+  downloadHtmlButton?.addEventListener('click', () => {
+    handleDownloadHtml();
   });
 
   contactsContainer.addEventListener('click', (event) => {
