@@ -54,6 +54,31 @@ function buildField(label, value, options = {}) {
   `;
 }
 
+function buildCheckboxRow(label, value, options = {}) {
+  const { internalOnly = false, mode = 'production', hideIfEmptyInProduction = false } = options;
+  if (internalOnly && mode === 'production') return '';
+
+  const raw = (value || '').trim();
+  if (hideIfEmptyInProduction && mode === 'production' && !raw) return '';
+
+  const normalized = raw.toLowerCase();
+  const isYes = ['yes', 'y', 'true', '1'].includes(normalized);
+  const isNo = ['no', 'n', 'false', '0'].includes(normalized);
+
+  const yesMark = isYes ? '☑' : '☐';
+  const noMark = isNo ? '☑' : '☐';
+
+  return `
+    <div class="field-row">
+      <span class="field-label">${label}:</span>
+      <span class="field-value checkbox-set">
+        <span class="box">${yesMark} Yes</span>
+        <span class="box">${noMark} No</span>
+      </span>
+    </div>
+  `;
+}
+
 function groupFields(rows) {
   const filtered = rows.filter(Boolean);
   if (!filtered.length) return '';
@@ -274,13 +299,13 @@ function renderPreview(passedData) {
   const houseSection = buildSection(
     'House Management',
     groupFields([
-      buildField('Strobe Lights', data.strobeLights, { mode, hideIfEmptyInProduction: true }),
+      buildCheckboxRow('Strobe Lights', data.strobeLights, { mode, hideIfEmptyInProduction: true }),
       buildField('Audience Photo / Video Policy', data.audiencePolicy, { mode }),
       buildField('Professional Photo / Video', data.professionalPhotoVideo, {
         mode,
         hideIfEmptyInProduction: true
       }),
-      buildField('GA Reserved Seats', data.gaReservedSeats, { mode })
+      buildCheckboxRow('GA Reserved Seats', data.gaReservedSeats, { mode })
     ])
   );
 
@@ -304,7 +329,7 @@ function renderPreview(passedData) {
   const merchandiseSection = buildSection(
     'Merchandise',
     groupFields([
-      buildField('Merch Allowed', data.merchAllowed, { mode }),
+      buildCheckboxRow('Merch Allowed', data.merchAllowed, { mode }),
       buildField('Merch Location', data.merchLocation, { mode }),
       buildField('Cashless Policy', data.cashlessPolicy, { mode }),
       buildField('Staffing', data.merchStaffing, { mode }),
@@ -326,11 +351,11 @@ function renderPreview(passedData) {
   const securitySection = buildSection(
     'Security & Staffing',
     groupFields([
-      buildField('Bag Check', data.bagCheck, { mode }),
-      buildField('Theater Security', data.theaterSecurity, { mode }),
+      buildCheckboxRow('Bag Check', data.bagCheck, { mode }),
+      buildCheckboxRow('Theater Security', data.theaterSecurity, { mode }),
       buildField('Re-entry Policy', data.reEntryPolicy, { mode }),
       buildField('Bag Policy Details', data.bagPolicyDetails, { mode }),
-      buildField('Barricade Security', data.barricadeSecurity, { mode }),
+      buildCheckboxRow('Barricade Security', data.barricadeSecurity, { mode }),
       buildField('Artist Escort Policy', data.artistEscortPolicy, { mode }),
       buildField('Emergency Procedures', data.emergencyProcedures, { mode })
     ])

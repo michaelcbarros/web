@@ -209,9 +209,9 @@ button.small {
 
 .pdf-preview {
   background: #fff;
-  border: 1px solid #d6d8dd;
-  border-radius: 2px;
-  padding: 20px;
+  border: none;
+  border-radius: 0;
+  padding: 18px;
   min-height: 11in;
   width: 7.25in;
   max-width: 100%;
@@ -265,7 +265,7 @@ button.small {
 .field-row {
   display: grid;
   grid-template-columns: 190px 1fr;
-  gap: 7px;
+  gap: 6px;
   font-size: 9pt;
   line-height: 1.32;
   margin-bottom: 2px;
@@ -286,6 +286,20 @@ button.small {
 .value-text.multiline {
   display: block;
   padding-left: 2px;
+}
+
+.checkbox-set {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9pt;
+  color: #0f172a;
+}
+
+.checkbox-set .box {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .contacts-table {
