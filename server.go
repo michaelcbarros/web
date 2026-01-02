@@ -116,6 +116,37 @@ func main() {
 
 func generatePDF(data map[string]string, contacts []contact) ([]byte, string, error) {
 	assetBase, _ := os.Getwd()
+	normalize := func(s string) string {
+		return strings.TrimSpace(s)
+	}
+	isPlaceholder := func(s string) bool {
+		return s == "" || strings.EqualFold(s, "n/a") || strings.EqualFold(s, "na")
+	}
+	safeVal := func(s string) string {
+		return template.HTMLEscapeString(normalize(s))
+	}
+	hasValue := func(key string) bool {
+		return !isPlaceholder(normalize(data[key]))
+	}
+	displayValue := func(key string) string {
+		if hasValue(key) {
+			return safeVal(data[key])
+		}
+		return ""
+	}
+	fallbackValue := func(key, fallback string) string {
+		if hasValue(key) {
+			return safeVal(data[key])
+		}
+		return template.HTMLEscapeString(fallback)
+	}
+	contactValue := func(val string) string {
+		if isPlaceholder(normalize(val)) {
+			return "TBD"
+		}
+		return template.HTMLEscapeString(val)
+	}
+
 	tpl, err := template.New("pdf").Funcs(template.FuncMap{
 		"val": func(key string) string {
 			s := strings.TrimSpace(data[key])
@@ -127,6 +158,10 @@ func generatePDF(data map[string]string, contacts []contact) ([]byte, string, er
 			}
 			return template.HTMLEscapeString(s)
 		},
+		"has":      hasValue,
+		"display":  displayValue,
+		"fallback": fallbackValue,
+		"contact":  contactValue,
 	}).Parse(string(tmplBytes))
 	if err != nil {
 		return nil, "", fmt.Errorf("template parse: %w", err)

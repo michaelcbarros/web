@@ -514,39 +514,48 @@ function handleGenerate(event) {
 
 async function renderPdfFromPreview(baseFileName) {
   const target = document.getElementById('pdf-preview');
-  if (!window.html2canvas || !window.jspdf) {
-    alert('PDF renderer not available. Please check network access to load html2canvas and jsPDF.');
+
+  if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
+    alert(
+      'Local PDF libraries not found. Please add vendor/html2canvas.min.js and vendor/jspdf.umd.min.js, then try again.'
+    );
+    window.print();
     return;
   }
 
-  const canvas = await window.html2canvas(target, {
-    scale: 3,
-    useCORS: true,
-    scrollY: -window.scrollY
-  });
+  try {
+    const canvas = await window.html2canvas(target, {
+      scale: 3,
+      useCORS: true,
+      scrollY: -window.scrollY
+    });
 
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter' });
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 24;
-  const renderableWidth = pageWidth - margin * 2;
-  const renderableHeight = pageHeight - margin * 2;
-  const scale = Math.min(renderableWidth / canvas.width, renderableHeight / canvas.height);
-  const outputWidth = canvas.width * scale;
-  const outputHeight = canvas.height * scale;
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 24;
+    const renderableWidth = pageWidth - margin * 2;
+    const renderableHeight = pageHeight - margin * 2;
+    const scale = Math.min(renderableWidth / canvas.width, renderableHeight / canvas.height);
+    const outputWidth = canvas.width * scale;
+    const outputHeight = canvas.height * scale;
 
-  pdf.addImage(
-    imgData,
-    'PNG',
-    (pageWidth - outputWidth) / 2,
-    margin,
-    outputWidth,
-    outputHeight,
-    undefined,
-    'FAST'
-  );
-  pdf.save(`${baseFileName}.pdf`);
+    pdf.addImage(
+      imgData,
+      'PNG',
+      (pageWidth - outputWidth) / 2,
+      margin,
+      outputWidth,
+      outputHeight,
+      undefined,
+      'FAST'
+    );
+    pdf.save(`${baseFileName}.pdf`);
+  } catch (err) {
+    console.error('PDF generation failed, falling back to browser print.', err);
+    window.print();
+  }
 }
 
 function attachEvents() {
