@@ -514,15 +514,69 @@ function handleGenerate(event) {
   downloadPdfFromServer(data);
 }
 
-async function downloadPdfFromServer(payload) {
-  const res = await fetch('/api/pdf', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+async function ensurePdfLibraries() {
+  if (window.html2canvas && window.jspdf) return true;
 
-  if (!res.ok) {
-    alert('Unable to generate PDF. Please try again.');
+  const loadScript = (src) =>
+    new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing && (existing.dataset.loaded === 'true' || existing.dataset.loaded === 'false')) {
+        if (existing.dataset.loaded === 'true') return resolve();
+        existing.addEventListener('load', () => resolve(), { once: true });
+        existing.addEventListener('error', () => reject(new Error(`Failed to load ${src}`)), {
+          once: true
+        });
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.dataset.loaded = 'false';
+      script.onload = () => {
+        script.dataset.loaded = 'true';
+        resolve();
+      };
+      script.onerror = () => {
+        script.dataset.loaded = 'false';
+        reject(new Error(`Failed to load ${src}`));
+      };
+      document.head.appendChild(script);
+    });
+
+  const html2canvasSources = [
+    'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+  ];
+  const jspdfSources = [
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+  ];
+
+  const tryLoad = async (sources) => {
+    for (const src of sources) {
+      try {
+        await loadScript(src);
+        return true;
+      } catch (_) {
+        // try next source
+      }
+    }
+    return false;
+  };
+
+  const [h2cLoaded, jspdfLoaded] = await Promise.all([
+    window.html2canvas ? true : tryLoad(html2canvasSources),
+    window.jspdf ? true : tryLoad(jspdfSources)
+  ]);
+
+  return h2cLoaded && jspdfLoaded && window.html2canvas && window.jspdf;
+}
+
+async function renderPdfFromPreview(baseFileName) {
+  const target = document.getElementById('pdf-preview');
+  const libsReady = await ensurePdfLibraries();
+  if (!libsReady) {
+    alert('Unable to generate PDF. Please check your connection and try again.');
     return;
   }
 
