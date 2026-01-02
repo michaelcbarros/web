@@ -1,3 +1,5 @@
+import { renderAdvancePDF } from './pdf/renderAdvancePDF.js';
+
 const form = document.getElementById('advance-form');
 const preview = document.getElementById('pdf-preview');
 const addContactButton = document.getElementById('add-contact');
