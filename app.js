@@ -1,3 +1,5 @@
+import { renderAdvancePDF } from './pdf/renderAdvancePDF.js';
+
 const form = document.getElementById('advance-form');
 const preview = document.getElementById('pdf-preview');
 const addContactButton = document.getElementById('add-contact');
@@ -509,44 +511,7 @@ function handleGenerate(event) {
   event?.stopPropagation();
   const data = collectFormData();
   renderPreview(data);
-  renderPdfFromPreview(buildFileName(data));
-}
-
-async function renderPdfFromPreview(baseFileName) {
-  const target = document.getElementById('pdf-preview');
-  if (!window.html2canvas || !window.jspdf) {
-    alert('PDF renderer not available. Please check network access to load html2canvas and jsPDF.');
-    return;
-  }
-
-  const canvas = await window.html2canvas(target, {
-    scale: 3,
-    useCORS: true,
-    scrollY: -window.scrollY
-  });
-
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter' });
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 24;
-  const renderableWidth = pageWidth - margin * 2;
-  const renderableHeight = pageHeight - margin * 2;
-  const scale = Math.min(renderableWidth / canvas.width, renderableHeight / canvas.height);
-  const outputWidth = canvas.width * scale;
-  const outputHeight = canvas.height * scale;
-
-  pdf.addImage(
-    imgData,
-    'PNG',
-    (pageWidth - outputWidth) / 2,
-    margin,
-    outputWidth,
-    outputHeight,
-    undefined,
-    'FAST'
-  );
-  pdf.save(`${baseFileName}.pdf`);
+  renderAdvancePDF(data, buildFileName(data));
 }
 
 function attachEvents() {
