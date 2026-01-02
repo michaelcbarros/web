@@ -506,6 +506,7 @@ function addContactRow(values = { name: '', email: '', phone: '', role: '' }) {
 
 function handleGenerate(event) {
   event?.preventDefault();
+  event?.stopPropagation();
   const data = collectFormData();
   renderPreview(data);
   const fileName = `${buildFileName(data)}.pdf`;
@@ -533,7 +534,7 @@ function handleGenerate(event) {
     })
     .catch((err) => {
       console.error(err);
-      alert('Unable to generate PDF. Please try again.');
+      alert('Unable to generate PDF via /api/pdf. Ensure the Go server is running on this origin. As a fallback, use “Download HTML” or “Download Self-Contained HTML.”');
     });
 }
 
@@ -677,6 +678,7 @@ function attachEvents() {
     if (button) {
       button.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         renderPreview();
       });
     }
@@ -684,17 +686,20 @@ function attachEvents() {
 
   addContactButton?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     addContactRow();
     renderPreview();
   });
 
   downloadHtmlButton?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     handleDownloadHtml();
   });
 
   downloadHtmlBundledButton?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     handleDownloadHtmlBundled();
   });
 
