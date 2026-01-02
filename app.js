@@ -9,7 +9,7 @@ const previewButtons = [
 ];
 const downloadHtmlButton = document.getElementById('download-html');
 const downloadHtmlBundledButton = document.getElementById('download-html-bundled');
-const generatePdfButton = document.getElementById('generate-pdf');
+const generatePdfButtons = Array.from(document.querySelectorAll('.generate-pdf'));
 let cachedStyles = '';
 
 const NA_VALUE = 'N/A';
@@ -658,7 +658,7 @@ async function handleDownloadHtmlBundled() {
 }
 
 function attachEvents() {
-  generatePdfButton?.addEventListener('click', handleGenerate);
+  generatePdfButtons.forEach((btn) => btn.addEventListener('click', handleGenerate));
   form.addEventListener('submit', (e) => e.preventDefault());
   form.addEventListener('input', () => renderPreview());
 
