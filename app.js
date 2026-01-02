@@ -509,44 +509,32 @@ function handleGenerate(event) {
   event?.stopPropagation();
   const data = collectFormData();
   renderPreview(data);
-  renderPdfFromPreview(buildFileName(data));
+  downloadPdfFromServer(data);
 }
 
-async function renderPdfFromPreview(baseFileName) {
-  const target = document.getElementById('pdf-preview');
-  if (!window.html2canvas || !window.jspdf) {
-    alert('PDF renderer not available. Please check network access to load html2canvas and jsPDF.');
+async function downloadPdfFromServer(payload) {
+  const res = await fetch('/api/pdf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    alert('Unable to generate PDF. Please try again.');
     return;
   }
 
-  const canvas = await window.html2canvas(target, {
-    scale: 3,
-    useCORS: true,
-    scrollY: -window.scrollY
-  });
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const disposition = res.headers.get('Content-Disposition') || '';
+  const match = disposition.match(/filename=\"?([^\";]+)\"?/i);
+  const filename = (match && match[1]) || `${buildFileName(payload)}.pdf`;
 
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter' });
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 24;
-  const renderableWidth = pageWidth - margin * 2;
-  const renderableHeight = pageHeight - margin * 2;
-  const scale = Math.min(renderableWidth / canvas.width, renderableHeight / canvas.height);
-  const outputWidth = canvas.width * scale;
-  const outputHeight = canvas.height * scale;
-
-  pdf.addImage(
-    imgData,
-    'PNG',
-    (pageWidth - outputWidth) / 2,
-    margin,
-    outputWidth,
-    outputHeight,
-    undefined,
-    'FAST'
-  );
-  pdf.save(`${baseFileName}.pdf`);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  window.URL.revokeObjectURL(url);
 }
 
 function attachEvents() {
