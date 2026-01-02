@@ -206,7 +206,7 @@ function renderPreview(passedData) {
   const headerBlock = `
     <div class="header-bar">
       <div class="logo-slot">
-        <img src="./OYD.png" alt="OYD" class="brand-img" onerror="this.style.display='none';" />
+        <img src="/OYD.png" alt="OYD" class="brand-img" onerror="this.onerror=null;this.src='/oyd.png';" />
       </div>
       <div class="logo-slot logo-right">
         <img src="./lecom.png" alt="LECOM" class="brand-img" onerror="this.style.display='none';" />
