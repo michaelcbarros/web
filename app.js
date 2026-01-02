@@ -571,35 +571,62 @@ async function renderPdfFromPreview(baseFileName) {
       scrollY: -window.scrollY
     });
 
-    const imgData = canvas.toDataURL('image/png');
     const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter', compress: true });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 36; // 0.5 inch
     const usableWidth = pageWidth - margin * 2;
     const usableHeight = pageHeight - margin * 2;
-    const scale = usableWidth / canvas.width;
-    const imgWidth = usableWidth;
-    const imgHeight = canvas.height * scale;
 
-    let remainingHeight = imgHeight;
-    let pageIndex = 0;
+    const scaleFactor = canvas.width / clone.offsetWidth;
+    const usableHeightDom = usableHeight / scaleFactor;
 
-    while (remainingHeight > 0) {
-      const offsetY = margin - pageIndex * usableHeight;
-      pdf.addImage(
-        imgData,
-        'PNG',
-        margin,
-        offsetY,
-        imgWidth,
-        imgHeight,
-        undefined,
-        'FAST'
+    // Calculate page breaks based on section boundaries (DOM space)
+    const sections = Array.from(clone.querySelectorAll('.pdf-section'));
+    const cloneRect = clone.getBoundingClientRect();
+    const breaks = [0];
+    let currentHeight = 0;
+    sections.forEach((section) => {
+      const rect = section.getBoundingClientRect();
+      const top = rect.top - cloneRect.top;
+      const height = rect.height;
+      const sectionBottom = top + height;
+      if (sectionBottom - breaks[breaks.length - 1] > usableHeightDom) {
+        // start new page at this section top
+        breaks.push(top);
+      }
+    });
+    // Add final end
+    breaks.push(canvas.height / scaleFactor);
+
+    for (let i = 0; i < breaks.length - 1; i++) {
+      const startDom = breaks[i];
+      const endDom = breaks[i + 1];
+      const sliceHeightDom = endDom - startDom;
+      const sliceHeightCanvas = sliceHeightDom * scaleFactor;
+
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = sliceHeightCanvas;
+      const sliceCtx = sliceCanvas.getContext('2d');
+      sliceCtx.drawImage(
+        canvas,
+        0,
+        startDom * scaleFactor,
+        canvas.width,
+        sliceHeightCanvas,
+        0,
+        0,
+        canvas.width,
+        sliceHeightCanvas
       );
-      remainingHeight -= usableHeight;
-      pageIndex += 1;
-      if (remainingHeight > 0) {
+
+      const imgData = sliceCanvas.toDataURL('image/png');
+      const imgWidth = usableWidth;
+      const imgHeight = sliceHeightCanvas * (imgWidth / canvas.width);
+
+      pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
+      if (i < breaks.length - 2) {
         pdf.addPage();
       }
     }
