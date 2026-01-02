@@ -395,6 +395,27 @@ button.small {
   font-weight: 700;
 }
 
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+}
+
+.timeline-list .field-row {
+  margin-bottom: 6px;
+}
+
+.page-break {
+  page-break-before: always;
+  break-before: page;
+  height: 0;
+}
+
+.contacts-section {
+  page-break-before: always;
+  break-before: page;
+}
+
 .print-footer {
   text-align: right;
   font-size: 10px;
