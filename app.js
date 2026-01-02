@@ -578,7 +578,7 @@ async function renderPdfFromPreview(baseFileName) {
     const usableWidth = pageWidth - margin * 2;
     const usableHeight = pageHeight - margin * 2;
 
-    // Relationship between canvas px and PDF pts
+    // Relationship between canvas px and PDF pts (width-based baseline)
     const pxToPtScale = usableWidth / canvas.width;
     const usableHeightCanvas = usableHeight / pxToPtScale; // in canvas px
 
@@ -621,8 +621,9 @@ async function renderPdfFromPreview(baseFileName) {
       );
 
       const imgData = sliceCanvas.toDataURL('image/png');
-      const imgWidth = usableWidth;
-      const imgHeight = sliceHeightCanvas * pxToPtScale;
+      const scale = Math.min(usableWidth / canvas.width, usableHeight / sliceHeightCanvas);
+      const imgWidth = canvas.width * scale;
+      const imgHeight = sliceHeightCanvas * scale;
 
       pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
       if (i < breaks.length - 2) {
