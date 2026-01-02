@@ -218,6 +218,28 @@ button.small {
   margin: 0 auto;
 }
 
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.logo-slot {
+  width: 25%;
+  min-height: 10px;
+}
+
+.logo-slot.logo-right {
+  text-align: right;
+}
+
+.brand-img {
+  max-height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+
 .placeholder {
   text-align: center;
   padding: 80px 20px;
@@ -392,6 +414,7 @@ button.small {
 @media print {
   body {
     background: #ffffff;
+    margin: 0;
   }
 
   .top-header,
@@ -413,8 +436,8 @@ button.small {
     border: none;
     width: 7.2in;
     min-height: auto;
-    margin: 0;
-    padding: 12mm 15mm;
+    margin: 0 auto;
+    padding: 12mm 15mm 12mm 15mm;
   }
 
   @page {

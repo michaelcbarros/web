@@ -1,38 +1,32 @@
-# Show Advance PDF Builder (Didactidigital)
+# Show Advance PDF service
 
-A lightweight, dependency-free web app that collects show advance details and produces a print-ready PDF layout. All Prism branding is removed in favor of a single footer line: **Powered by Didactidigital**.
+## Server-side PDF generation
 
-## Features
+This repo now includes a Go endpoint that renders the advance layout to PDF using `go-wkhtmltopdf`:
 
-- Covers all required sections (header through contacts) and keeps them visible even when fields are empty.
-- Generates a print-ready view that respects page breaks and renders blank lines for missing data.
-- Uses the browser’s **Print → Save as PDF** flow with a generated filename in the format `Show-Advance_{EventName}_{YYYY-MM-DD}.pdf`.
-- No external APIs or databases; everything runs in the browser.
+- Endpoint: `POST /api/pdf`
+- Input: JSON payload matching the current form fields (same keys as used in the preview), with `contacts` as an array of `{name,email,phone,role}`.
+- Output: `application/pdf` with filename `Show-Advance_<EventName>_<YYYY-MM-DD>.pdf`.
 
-## Running locally
+### Running locally
+
+Prerequisites: `wkhtmltopdf` (wkhtmltox) installed on your system.
 
 ```bash
-# Serve the static files (no extra dependencies required)
-npm start
-# or open index.html directly in your browser
+go mod tidy
+go run server.go
+# visit http://localhost:8080 for the existing UI; POST to /api/pdf to download a PDF
 ```
 
-The server runs at `http://localhost:4173` by default.
+### Docker (recommended)
 
-## Generating the PDF
+```bash
+docker build -t showadvance .
+docker run -p 8080:8080 showadvance
+```
 
-1. Fill out the form sections.
-2. Click **Generate PDF**. The preview updates and the print dialog opens.
-3. Choose “Save as PDF” in your browser’s print dialog. The suggested filename is auto-filled per the required format.
+The image installs `wkhtmltopdf` and runs the Go server.
 
-### Redaction modes
+### Main-thread conversion
 
-- **Production (default):** Hides internal financial items (door price, merch split) and removes the Settlement section entirely.
-- **Internal:** Shows all internal-only rows and the Settlement section.
-
-Use the **Redaction Mode** selector in the header to switch between outputs before clicking **Generate PDF**.
-
-## Notes
-
-- Page layout is operational and designed to tolerate incomplete data—fields stay in place as blank lines.
-- The footer text appears in the lower-right corner on every printed page.
+`wkhtmltopdf` requires conversion on the main thread. The server uses a single conversion loop (a job queue on the main goroutine) so HTTP requests enqueue work, preventing crashes from concurrent conversions.

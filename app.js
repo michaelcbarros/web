@@ -187,6 +187,14 @@ function renderPreview(passedData) {
   const lodgingValue = (value) => (lodgingOptOut && !value ? 'N/A' : value);
 
   const headerBlock = `
+    <div class="header-bar">
+      <div class="logo-slot">
+        <img src="./oyd.png" alt="OYD" class="brand-img" onerror="this.style.display='none';" />
+      </div>
+      <div class="logo-slot logo-right">
+        <img src="./lecom.png" alt="LECOM" class="brand-img" onerror="this.style.display='none';" />
+      </div>
+    </div>
     <div class="pdf-title">
       ${valueOrPlaceholder(data.eventName, { multiline: false })}
     </div>
