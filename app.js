@@ -520,24 +520,21 @@ async function renderPdfFromPreview(baseFileName) {
   }
 
   const canvas = await window.html2canvas(target, {
-    scale: 2,
+    scale: 3,
     useCORS: true,
     scrollY: -window.scrollY
   });
 
   const imgData = canvas.toDataURL('image/png');
-  const pdf = new window.jspdf.jsPDF({ unit: 'pt', format: 'letter', orientation: 'p' });
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
+  const renderWidth = target.scrollWidth;
+  const renderHeight = target.scrollHeight;
+  const pdf = new window.jspdf.jsPDF({
+    orientation: renderWidth >= renderHeight ? 'l' : 'p',
+    unit: 'px',
+    format: [renderWidth, renderHeight]
+  });
 
-  const imgWidth = pageWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-  const finalWidth = imgWidth * ratio;
-  const finalHeight = imgHeight * ratio;
-  const marginTop = 12;
-
-  pdf.addImage(imgData, 'PNG', (pageWidth - finalWidth) / 2, marginTop, finalWidth, finalHeight, undefined, 'FAST');
+  pdf.addImage(imgData, 'PNG', 0, 0, renderWidth, renderHeight, undefined, 'FAST');
   pdf.save(`${baseFileName}.pdf`);
 }
 
