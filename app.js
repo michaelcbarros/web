@@ -8,6 +8,7 @@ const previewButtons = [
   document.getElementById('refresh-preview-footer')
 ];
 const downloadHtmlButton = document.getElementById('download-html');
+const downloadHtmlBundledButton = document.getElementById('download-html-bundled');
 let cachedStyles = '';
 
 function escapeHtml(value = '') {
@@ -581,6 +582,73 @@ async function handleDownloadHtml() {
   URL.revokeObjectURL(url);
 }
 
+async function fetchImageBase64(path) {
+  try {
+    const res = await fetch(path, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.warn(`Inline image failed for ${path}:`, err);
+    return '';
+  }
+}
+
+async function handleDownloadHtmlBundled() {
+  const data = collectFormData();
+  renderPreview(data);
+  const markup = preview.innerHTML;
+  const styles = await ensureStyles();
+  const fileName = `${buildFileName(data)}_bundled.html`;
+
+  const [oydData, lecomData] = await Promise.all([
+    fetchImageBase64('oyd.png'),
+    fetchImageBase64('lecom.png')
+  ]);
+
+  const inlineMarkup = markup
+    .replace(/src="\\.\\/oyd.png"/g, oydData ? `src="${oydData}"` : 'src=""')
+    .replace(/src="\\.\\/lecom.png"/g, lecomData ? `src="${lecomData}"` : 'src=""');
+
+  const doc = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${buildFileName(data)}</title>
+  <style>
+  ${styles}
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="layout">
+      <section class="preview-panel">
+        <div id="pdf-preview" class="pdf-preview">
+          ${inlineMarkup}
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const blob = new Blob([doc], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function attachEvents() {
   form.addEventListener('submit', handleGenerate);
   form.addEventListener('input', () => renderPreview());
@@ -600,6 +668,10 @@ function attachEvents() {
 
   downloadHtmlButton?.addEventListener('click', () => {
     handleDownloadHtml();
+  });
+
+  downloadHtmlBundledButton?.addEventListener('click', () => {
+    handleDownloadHtmlBundled();
   });
 
   contactsContainer.addEventListener('click', (event) => {
