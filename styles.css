@@ -212,7 +212,6 @@ button.small {
   border: none;
   border-radius: 0;
   padding: 22px;
-  min-height: 11in;
   width: 7.5in;
   max-width: 100%;
   margin: 0 auto;
@@ -221,22 +220,26 @@ button.small {
 .header-bar {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: center;
   margin-bottom: 8px;
   position: relative;
+  min-height: 36px;
 }
 
 .logo-slot {
-  width: 120px;
-  min-height: 32px;
+  position: absolute;
+  top: 0;
+  width: 100px;
+  min-height: 28px;
 }
 
 .logo-slot.logo-right {
   text-align: right;
+  right: 0;
 }
 
 .brand-img {
-  max-height: 32px;
+  max-height: 26px;
   width: auto;
   object-fit: contain;
 }
