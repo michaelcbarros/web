@@ -115,25 +115,25 @@ function buildContactsTable(contacts) {
             (contact) => `
           <tr>
             <td>${valueOrPlaceholder(contact.name, { multiline: false })}</td>
-            <td>${valueOrPlaceholder(contact.email, { multiline: false })}</td>
-            <td>${valueOrPlaceholder(contact.phone, { multiline: false })}</td>
             <td>${valueOrPlaceholder(contact.role, { multiline: false })}</td>
+            <td>${valueOrPlaceholder(contact.phone, { multiline: false })}</td>
+            <td>${valueOrPlaceholder(contact.email, { multiline: false })}</td>
           </tr>
         `
           )
           .join('');
 
   return `
-    <section class="pdf-section">
+    <section class="pdf-section contacts-section">
       <h3>Contacts</h3>
       <div class="section-body">
         <table class="contacts-table">
           <thead>
             <tr>
               <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
               <th>Role</th>
+              <th>Phone</th>
+              <th>Email</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -198,11 +198,15 @@ function renderPreview(passedData) {
     false;
 
   const lodgingValue = (value) => (lodgingOptOut && !value ? 'N/A' : value);
+  const loadInWindow =
+    data.loadInTime && data.loadOutTime
+      ? `${data.loadInTime} – ${data.loadOutTime}`
+      : data.loadInTime || data.loadOutTime;
 
   const headerBlock = `
     <div class="header-bar">
       <div class="logo-slot">
-        <img src="./oyd.png" alt="OYD" class="brand-img" onerror="this.style.display='none';" />
+        <img src="/OYD.png" alt="OYD" class="brand-img" onerror="this.onerror=null;this.src='/oyd.png';" />
       </div>
       <div class="logo-slot logo-right">
         <img src="./lecom.png" alt="LECOM" class="brand-img" onerror="this.style.display='none';" />
@@ -221,49 +225,15 @@ function renderPreview(passedData) {
     omitHeading: true
   });
 
-  const overviewSection = buildSection(
-    'Event Overview',
-    groupFields([
-      buildField('Promoter', data.promoterName, { mode }),
-      buildField('Show Type', data.showType, { mode }),
-      buildField('Venue Capacity', data.capacity, { mode })
-    ]),
-    { className: 'section-spacing' }
-  );
-
   const atAGlanceSection = buildSection(
     'At-a-glance',
     groupFields([
-      buildField('Load-in', data.loadInTime, { mode }),
-      buildField('Soundcheck', data.soundcheckTime, { mode }),
       buildField('Doors', data.doorsTime, { mode }),
       buildField('Show Start', data.showStartTime, { mode }),
-      buildField('Set Lengths', data.setLengths, { mode }),
       buildField('Curfew / Hard Out', data.curfew, { mode }),
-      buildField('Load-out', data.loadOutTime, { mode })
-    ]) +
-      groupFields([
-        buildField('Promoter / Event Management', data.keyPromoter, { mode }),
-        buildField('Venue GM', data.keyVenueGm, { mode }),
-        buildField('Day-of Show Runner', data.keyRunner, { mode }),
-        buildField('Production Manager', data.keyProductionManager, { mode }),
-        buildField('Security Lead', data.keySecurityLead, { mode }),
-        buildField('Box Office Lead', data.keyBoxOfficeLead, { mode }),
-        buildField('Artist Tour Manager / Advancing', data.keyTourManager, { mode }),
-        buildField('FOH Engineer', data.keyFohEngineer, { mode })
-      ]),
-    { className: 'section-spacing', multiColumn: true }
-  );
-
-  const eventDetailsSection = buildSection(
-    'Event Details',
-    groupFields([
-      buildField('Announce Date', data.announceDate, { mode }),
-      buildField('On-Sale Date / Time', data.onSaleDateTime, { mode }),
-      buildField('Event Date(s)', data.eventDates, { mode }),
-      buildField('Doors / ROS Line', data.doorsRos, { mode })
+      buildField('Load-in Window', loadInWindow, { mode })
     ]),
-    { className: 'section-spacing', multiColumn: true }
+    { className: 'section-spacing summary-grid', multiColumn: true }
   );
 
   const scheduleSection = buildSection(
@@ -275,27 +245,23 @@ function renderPreview(passedData) {
       buildField('Show Start', data.showStartTime, { mode }),
       buildField('Set Lengths (Support / Headliner)', data.setLengths, { mode }),
       buildField('Curfew / Hard Out', data.curfew, { mode }),
-      buildField('Load-out', data.loadOutTime, { mode })
+      buildField('Load-out', data.loadOutTime, { mode }),
+      buildField('ROS', data.doorsRos, { mode, hideIfEmptyInProduction: true })
     ]),
-    { className: 'section-spacing', multiColumn: true }
+    { className: 'section-spacing timeline-list', multiColumn: true }
   );
 
-  const talentSection = buildSection(
-    'Event Talent',
-    groupFields([buildField('Headliner', data.headliner, { mode }) + buildField('Support', data.support, { mode })])
-  );
-
-  const keyContactsSection = buildSection(
-    'Key Contacts',
+  const eventDetailsSection = buildSection(
+    'Event Details',
     groupFields([
-      buildField('Promoter / Event Management', data.keyPromoter, { mode }),
-      buildField('Venue GM', data.keyVenueGm, { mode }),
-      buildField('Day-of Show Runner', data.keyRunner, { mode }),
-      buildField('Production Manager', data.keyProductionManager, { mode }),
-      buildField('Security Lead', data.keySecurityLead, { mode }),
-      buildField('Box Office Lead', data.keyBoxOfficeLead, { mode }),
-      buildField('Artist Tour Manager / Advancing', data.keyTourManager, { mode }),
-      buildField('FOH Engineer', data.keyFohEngineer, { mode })
+      buildField('Promoter', data.promoterName, { mode }),
+      buildField('Show Type', data.showType, { mode }),
+      buildField('Venue Capacity', data.capacity, { mode }),
+      buildField('ADA Needs', data.adaNeeds, { mode }),
+      buildField('Format (GA / Reserved)', data.format, { mode }),
+      buildField('Event Date(s)', data.eventDates, { mode }),
+      buildField('Headliner', data.headliner, { mode }),
+      buildField('Support', data.support, { mode })
     ]),
     { className: 'section-spacing', multiColumn: true }
   );
@@ -306,12 +272,11 @@ function renderPreview(passedData) {
       buildField('Ticket Platform', data.ticketPlatform, { mode }),
       buildField('Box Office Open', data.boxOfficeOpen, { mode }),
       buildField('Will Call Process', data.willCallProcess, { mode }),
-      buildField('Format (Reserved vs GA)', data.format, { mode }),
       buildField('Artist Comps', data.artistComps, { mode }),
       buildField('Venue Comps', data.venueComps, { mode }),
       buildField('On-Sale Date / Time', data.onSaleDateTime, { mode }),
-      buildField('Door Price', data.doorPrice, { mode, internalOnly: true }),
-      buildField('ADA Needs', data.adaNeeds, { mode })
+      buildField('Announce Date', data.announceDate, { mode }),
+      buildField('Door Price', data.doorPrice, { mode, internalOnly: true })
     ]),
     { className: 'section-spacing', multiColumn: true }
   );
@@ -384,7 +349,7 @@ function renderPreview(passedData) {
   );
 
   const securitySection = buildSection(
-    'Security & Staffing',
+    'Security',
     groupFields([
       buildCheckboxRow('Bag Check', data.bagCheck, { mode }),
       buildCheckboxRow('Theater Security', data.theaterSecurity, { mode }),
@@ -454,15 +419,11 @@ function renderPreview(passedData) {
   preview.innerHTML = `
     <div class="top-grid">
       ${headerSection}
-      ${overviewSection}
-    </div>
-    <div class="top-grid">
       ${atAGlanceSection}
-      ${keyContactsSection}
     </div>
-    ${eventDetailsSection}
     ${scheduleSection}
-    ${talentSection}
+    <div class="page-break"></div>
+    ${eventDetailsSection}
     ${ticketingSection}
     ${loadInSection}
     ${houseSection}
