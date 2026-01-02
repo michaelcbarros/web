@@ -4,191 +4,237 @@
   <meta charset="utf-8" />
   <style>
     {{.CSS}}
-    body { font-family: "Inter", Arial, sans-serif; }
-    .box { border: 1px solid #e5e7eb; padding: 10px 12px; margin-bottom: 10px; break-inside: avoid; page-break-inside: avoid; }
-    .box h3 { margin-top: 0; margin-bottom: 6px; font-size: 11.5px; color: #c53030; border-bottom: 1px solid rgba(197,48,48,0.25); padding-bottom: 4px; }
-    .row { display: flex; flex-wrap: wrap; gap: 12px; }
-    .col { flex: 1 1 300px; min-width: 260px; }
-    .field-row { display: flex; gap: 6px; margin-bottom: 3px; }
-    .field-label { width: 180px; color: #6b7280; font-weight: 400; }
-    .field-value { flex: 1; color: #0f172a; font-weight: 400; }
-    .checkbox-set { display: inline-flex; gap: 10px; }
-    .checkbox-set .box { border: none; padding: 0; margin: 0; }
-    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .logo-slot { width: 25%; }
+    body { font-family: "Inter", Arial, sans-serif; color: #0f172a; }
+    .pdf-page { max-width: 7.1in; margin: 0 auto; padding: 4px 0 12px; }
+    .masthead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .logo-slot { width: 24%; }
     .logo-slot.right { text-align: right; }
     .brand-img { max-height: 48px; width: auto; object-fit: contain; }
+    .event-title { font-size: 22px; font-weight: 700; margin: 0; }
+    .event-date { font-size: 13px; margin-top: 4px; font-weight: 600; }
+    .event-venue { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    .divider { border: 0; border-bottom: 1px solid #e5e7eb; margin: 8px 0 14px; }
+
+    .card-grid { display: grid; gap: 12px; }
+    .two-col { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 14px; break-inside: avoid; page-break-inside: avoid; }
+    .card-title { margin: 0 0 8px; font-size: 12px; font-weight: 700; color: #b91c1c; letter-spacing: 0.01em; }
+    .field-row { display: flex; gap: 10px; margin-bottom: 6px; align-items: baseline; }
+    .field-row:last-child { margin-bottom: 0; }
+    .field-label { flex: 0 0 160px; color: #6b7280; font-size: 10px; font-weight: 600; text-transform: none; }
+    .field-value { flex: 1; color: #0f172a; font-size: 11px; font-weight: 600; }
+    .field-value.muted { color: #9ca3af; font-weight: 600; }
+    .tbd { font-style: italic; }
+
+    .contacts-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .contacts-table th, .contacts-table td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
+    .contacts-table th { background: #f8fafc; color: #374151; font-weight: 700; }
   </style>
 </head>
 <body>
-  <div class="header-bar">
-    <div class="logo-slot">
-      <img src="file://{{.AssetBase}}/oyd.png" class="brand-img" alt="OYD" />
+  <div class="pdf-page">
+    <div class="masthead">
+      <div class="logo-slot">
+        <img src="file://{{.AssetBase}}/oyd.png" class="brand-img" alt="OYD" />
+      </div>
+      <div class="logo-slot right">
+        <img src="file://{{.AssetBase}}/lecom.png" class="brand-img" alt="LECOM" />
+      </div>
     </div>
-    <div class="logo-slot right">
-      <img src="file://{{.AssetBase}}/lecom.png" class="brand-img" alt="LECOM" />
+
+    <div class="page-header">
+      <h1 class="event-title">{{fallback "eventName" "Show Advance"}}</h1>
+      {{if has "eventDate"}}<div class="event-date">{{display "eventDate"}}</div>{{end}}
+      <div class="event-venue">
+        {{if has "venueName"}}{{display "venueName"}}{{end}}{{if and (has "venueName") (or (has "venueStreet") (has "venueCityStateZip"))}}, {{end}}
+        {{if has "venueStreet"}}{{display "venueStreet"}}{{end}}{{if and (has "venueStreet") (has "venueCityStateZip")}}, {{end}}
+        {{if has "venueCityStateZip"}}{{display "venueCityStateZip"}}{{end}}
+      </div>
     </div>
-  </div>
-  <div class="pdf-title">{{val "eventName"}}</div>
-  <div class="pdf-date">{{val "eventDate"}}</div>
-  <div class="pdf-venue">{{val "venueName"}}</div>
-  <div class="pdf-address">{{val "venueStreet"}}, {{val "venueCityStateZip"}}</div>
+    <hr class="divider" />
 
-  <div class="row">
-    <div class="col box">
-      <h3>Event Overview</h3>
-      <div class="field-row"><div class="field-label">Promoter</div><div class="field-value">{{val "promoterName"}}</div></div>
-      <div class="field-row"><div class="field-label">Show Type</div><div class="field-value">{{val "showType"}}</div></div>
-      <div class="field-row"><div class="field-label">Venue Capacity</div><div class="field-value">{{val "capacity"}}</div></div>
+    <div class="card-grid two-col">
+      {{if or (has "promoterName") (has "showType") (has "capacity")}}
+      <div class="card">
+        <h3 class="card-title">Event Overview</h3>
+        {{if has "promoterName"}}<div class="field-row"><div class="field-label">Promoter</div><div class="field-value">{{display "promoterName"}}</div></div>{{end}}
+        {{if has "showType"}}<div class="field-row"><div class="field-label">Show Type</div><div class="field-value">{{display "showType"}}</div></div>{{end}}
+        {{if has "capacity"}}<div class="field-row"><div class="field-label">Venue Capacity</div><div class="field-value">{{display "capacity"}}</div></div>{{end}}
+      </div>
+      {{end}}
+
+      <div class="card">
+        <h3 class="card-title">At-a-glance</h3>
+        <div class="field-row"><div class="field-label">Load-in</div><div class="field-value {{if not (has "loadInTime")}}muted tbd{{end}}">{{if has "loadInTime"}}{{display "loadInTime"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Soundcheck</div><div class="field-value {{if not (has "soundcheckTime")}}muted tbd{{end}}">{{if has "soundcheckTime"}}{{display "soundcheckTime"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Doors</div><div class="field-value {{if not (has "doorsTime")}}muted tbd{{end}}">{{if has "doorsTime"}}{{display "doorsTime"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Show Start</div><div class="field-value {{if not (has "showStartTime")}}muted tbd{{end}}">{{if has "showStartTime"}}{{display "showStartTime"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Set Lengths</div><div class="field-value {{if not (has "setLengths")}}muted tbd{{end}}">{{if has "setLengths"}}{{display "setLengths"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Curfew / Hard Out</div><div class="field-value {{if not (has "curfew")}}muted tbd{{end}}">{{if has "curfew"}}{{display "curfew"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Load-out</div><div class="field-value {{if not (has "loadOutTime")}}muted tbd{{end}}">{{if has "loadOutTime"}}{{display "loadOutTime"}}{{else}}TBD{{end}}</div></div>
+      </div>
+
+      {{if or (has "announceDate") (has "onSaleDateTime") (has "eventDates") (has "doorsRos")}}
+      <div class="card">
+        <h3 class="card-title">Event Details</h3>
+        {{if has "announceDate"}}<div class="field-row"><div class="field-label">Announce Date</div><div class="field-value">{{display "announceDate"}}</div></div>{{end}}
+        {{if has "onSaleDateTime"}}<div class="field-row"><div class="field-label">On-Sale Date / Time</div><div class="field-value">{{display "onSaleDateTime"}}</div></div>{{end}}
+        {{if has "eventDates"}}<div class="field-row"><div class="field-label">Event Date(s)</div><div class="field-value">{{display "eventDates"}}</div></div>{{end}}
+        {{if has "doorsRos"}}<div class="field-row"><div class="field-label">Doors / ROS Line</div><div class="field-value">{{display "doorsRos"}}</div></div>{{end}}
+      </div>
+      {{end}}
     </div>
-    <div class="col box">
-      <h3>At-a-glance</h3>
-      <div class="field-row"><div class="field-label">Load-in</div><div class="field-value">{{val "loadInTime"}}</div></div>
-      <div class="field-row"><div class="field-label">Soundcheck</div><div class="field-value">{{val "soundcheckTime"}}</div></div>
-      <div class="field-row"><div class="field-label">Doors</div><div class="field-value">{{val "doorsTime"}}</div></div>
-      <div class="field-row"><div class="field-label">Show Start</div><div class="field-value">{{val "showStartTime"}}</div></div>
-      <div class="field-row"><div class="field-label">Set Lengths</div><div class="field-value">{{val "setLengths"}}</div></div>
-      <div class="field-row"><div class="field-label">Curfew</div><div class="field-value">{{val "curfew"}}</div></div>
-      <div class="field-row"><div class="field-label">Load-out</div><div class="field-value">{{val "loadOutTime"}}</div></div>
+
+    <div class="card-grid two-col" style="margin-top:12px;">
+      <div class="card">
+        <h3 class="card-title">Key Contacts</h3>
+        <div class="field-row"><div class="field-label">Promoter / Event Mgmt</div><div class="field-value {{if not (has "keyPromoter")}}muted tbd{{end}}">{{if has "keyPromoter"}}{{display "keyPromoter"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Venue GM</div><div class="field-value {{if not (has "keyVenueGm")}}muted tbd{{end}}">{{if has "keyVenueGm"}}{{display "keyVenueGm"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Runner</div><div class="field-value {{if not (has "keyRunner")}}muted tbd{{end}}">{{if has "keyRunner"}}{{display "keyRunner"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Production Manager</div><div class="field-value {{if not (has "keyProductionManager")}}muted tbd{{end}}">{{if has "keyProductionManager"}}{{display "keyProductionManager"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Security Lead</div><div class="field-value {{if not (has "keySecurityLead")}}muted tbd{{end}}">{{if has "keySecurityLead"}}{{display "keySecurityLead"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Box Office Lead</div><div class="field-value {{if not (has "keyBoxOfficeLead")}}muted tbd{{end}}">{{if has "keyBoxOfficeLead"}}{{display "keyBoxOfficeLead"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">Tour Manager</div><div class="field-value {{if not (has "keyTourManager")}}muted tbd{{end}}">{{if has "keyTourManager"}}{{display "keyTourManager"}}{{else}}TBD{{end}}</div></div>
+        <div class="field-row"><div class="field-label">FOH Engineer</div><div class="field-value {{if not (has "keyFohEngineer")}}muted tbd{{end}}">{{if has "keyFohEngineer"}}{{display "keyFohEngineer"}}{{else}}TBD{{end}}</div></div>
+      </div>
+
+      {{if or (has "ticketPlatform") (has "boxOfficeOpen") (has "willCallProcess") (has "format") (has "artistComps") (has "venueComps") (has "adaNeeds") (has "onSaleDateTime")}}
+      <div class="card">
+        <h3 class="card-title">Ticketing / Box Office</h3>
+        {{if has "ticketPlatform"}}<div class="field-row"><div class="field-label">Ticket Platform</div><div class="field-value">{{display "ticketPlatform"}}</div></div>{{end}}
+        {{if has "boxOfficeOpen"}}<div class="field-row"><div class="field-label">Box Office Open</div><div class="field-value">{{display "boxOfficeOpen"}}</div></div>{{end}}
+        {{if has "willCallProcess"}}<div class="field-row"><div class="field-label">Will Call Process</div><div class="field-value">{{display "willCallProcess"}}</div></div>{{end}}
+        {{if has "format"}}<div class="field-row"><div class="field-label">Format</div><div class="field-value">{{display "format"}}</div></div>{{end}}
+        {{if has "artistComps"}}<div class="field-row"><div class="field-label">Artist Comps</div><div class="field-value">{{display "artistComps"}}</div></div>{{end}}
+        {{if has "venueComps"}}<div class="field-row"><div class="field-label">Venue Comps</div><div class="field-value">{{display "venueComps"}}</div></div>{{end}}
+        {{if has "onSaleDateTime"}}<div class="field-row"><div class="field-label">On-Sale Date / Time</div><div class="field-value">{{display "onSaleDateTime"}}</div></div>{{end}}
+        {{if has "adaNeeds"}}<div class="field-row"><div class="field-label">ADA Needs</div><div class="field-value">{{display "adaNeeds"}}</div></div>{{end}}
+      </div>
+      {{end}}
     </div>
-  </div>
 
-  <div class="row">
-    <div class="col box">
-      <h3>Event Details</h3>
-      <div class="field-row"><div class="field-label">Announce Date</div><div class="field-value">{{val "announceDate"}}</div></div>
-      <div class="field-row"><div class="field-label">On-Sale Date / Time</div><div class="field-value">{{val "onSaleDateTime"}}</div></div>
-      <div class="field-row"><div class="field-label">Event Date(s)</div><div class="field-value">{{val "eventDates"}}</div></div>
-      <div class="field-row"><div class="field-label">Doors / ROS Line</div><div class="field-value">{{val "doorsRos"}}</div></div>
+    <div class="card-grid two-col" style="margin-top:12px;">
+      <div class="card">
+        <h3 class="card-title">Load-in & Parking</h3>
+        <div class="field-row"><div class="field-label">Load-in Entrance / Address</div><div class="field-value {{if not (has "loadInAddress")}}muted tbd{{end}}">{{if has "loadInAddress"}}{{display "loadInAddress"}}{{else}}TBD{{end}}</div></div>
+        {{if has "dockNotes"}}<div class="field-row"><div class="field-label">Dock / Ramp Notes</div><div class="field-value">{{display "dockNotes"}}</div></div>{{end}}
+        {{if has "parkingInstructions"}}<div class="field-row"><div class="field-label">Parking Instructions</div><div class="field-value">{{display "parkingInstructions"}}</div></div>{{end}}
+        {{if has "accessNotes"}}<div class="field-row"><div class="field-label">Credentials / Access Notes</div><div class="field-value">{{display "accessNotes"}}</div></div>{{end}}
+      </div>
+
+      {{if or (has "strobeLights") (has "audiencePolicy") (has "professionalPhotoVideo") (has "gaReservedSeats")}}
+      <div class="card">
+        <h3 class="card-title">House Management</h3>
+        {{if has "strobeLights"}}<div class="field-row"><div class="field-label">Strobe Lights</div><div class="field-value">{{display "strobeLights"}}</div></div>{{end}}
+        {{if has "audiencePolicy"}}<div class="field-row"><div class="field-label">Audience Photo / Video Policy</div><div class="field-value">{{display "audiencePolicy"}}</div></div>{{end}}
+        {{if has "professionalPhotoVideo"}}<div class="field-row"><div class="field-label">Professional Photo / Video</div><div class="field-value">{{display "professionalPhotoVideo"}}</div></div>{{end}}
+        {{if has "gaReservedSeats"}}<div class="field-row"><div class="field-label">GA Reserved Seats</div><div class="field-value">{{display "gaReservedSeats"}}</div></div>{{end}}
+      </div>
+      {{end}}
     </div>
-    <div class="col box">
-      <h3>Key Contacts</h3>
-      <div class="field-row"><div class="field-label">Promoter</div><div class="field-value">{{val "keyPromoter"}}</div></div>
-      <div class="field-row"><div class="field-label">Venue GM</div><div class="field-value">{{val "keyVenueGm"}}</div></div>
-      <div class="field-row"><div class="field-label">Runner</div><div class="field-value">{{val "keyRunner"}}</div></div>
-      <div class="field-row"><div class="field-label">Production Manager</div><div class="field-value">{{val "keyProductionManager"}}</div></div>
-      <div class="field-row"><div class="field-label">Security Lead</div><div class="field-value">{{val "keySecurityLead"}}</div></div>
-      <div class="field-row"><div class="field-label">Box Office Lead</div><div class="field-value">{{val "keyBoxOfficeLead"}}</div></div>
-      <div class="field-row"><div class="field-label">Tour Manager</div><div class="field-value">{{val "keyTourManager"}}</div></div>
-      <div class="field-row"><div class="field-label">FOH Engineer</div><div class="field-value">{{val "keyFohEngineer"}}</div></div>
+
+    <div class="card-grid two-col" style="margin-top:12px;">
+      {{if or (has "budget") (has "caterer") (has "mealsFor") (has "mealTimes") (has "dietaryRestrictions") (has "mealLocation")}}
+      <div class="card">
+        <h3 class="card-title">Hospitality & Catering</h3>
+        {{if has "budget"}}<div class="field-row"><div class="field-label">Budget</div><div class="field-value">{{display "budget"}}</div></div>{{end}}
+        {{if has "caterer"}}<div class="field-row"><div class="field-label">Caterer</div><div class="field-value">{{display "caterer"}}</div></div>{{end}}
+        {{if has "mealsFor"}}<div class="field-row"><div class="field-label">Meals for # Artists / Personnel</div><div class="field-value">{{display "mealsFor"}}</div></div>{{end}}
+        {{if has "mealTimes"}}<div class="field-row"><div class="field-label">Meal Times</div><div class="field-value">{{display "mealTimes"}}</div></div>{{end}}
+        {{if has "dietaryRestrictions"}}<div class="field-row"><div class="field-label">Dietary Restrictions</div><div class="field-value">{{display "dietaryRestrictions"}}</div></div>{{end}}
+        {{if has "mealLocation"}}<div class="field-row"><div class="field-label">Meal Location</div><div class="field-value">{{display "mealLocation"}}</div></div>{{end}}
+      </div>
+      {{end}}
+
+      {{if or (has "bagCheck") (has "theaterSecurity") (has "reEntryPolicy") (has "bagPolicyDetails") (has "barricadeSecurity") (has "artistEscortPolicy") (has "emergencyProcedures")}}
+      <div class="card">
+        <h3 class="card-title">Security & Staffing</h3>
+        {{if has "bagCheck"}}<div class="field-row"><div class="field-label">Bag Check</div><div class="field-value">{{display "bagCheck"}}</div></div>{{end}}
+        {{if has "theaterSecurity"}}<div class="field-row"><div class="field-label">Theater Security</div><div class="field-value">{{display "theaterSecurity"}}</div></div>{{end}}
+        {{if has "reEntryPolicy"}}<div class="field-row"><div class="field-label">Re-entry Policy</div><div class="field-value">{{display "reEntryPolicy"}}</div></div>{{end}}
+        {{if has "bagPolicyDetails"}}<div class="field-row"><div class="field-label">Bag Policy Details</div><div class="field-value">{{display "bagPolicyDetails"}}</div></div>{{end}}
+        {{if has "barricadeSecurity"}}<div class="field-row"><div class="field-label">Barricade Security</div><div class="field-value">{{display "barricadeSecurity"}}</div></div>{{end}}
+        {{if has "artistEscortPolicy"}}<div class="field-row"><div class="field-label">Artist Escort Policy</div><div class="field-value">{{display "artistEscortPolicy"}}</div></div>{{end}}
+        {{if has "emergencyProcedures"}}<div class="field-row"><div class="field-label">Emergency Procedures</div><div class="field-value">{{display "emergencyProcedures"}}</div></div>{{end}}
+      </div>
+      {{end}}
     </div>
-  </div>
 
-  <div class="box">
-    <h3>Ticketing / Box Office</h3>
-    <div class="field-row"><div class="field-label">Ticket Platform</div><div class="field-value">{{val "ticketPlatform"}}</div></div>
-    <div class="field-row"><div class="field-label">Box Office Open</div><div class="field-value">{{val "boxOfficeOpen"}}</div></div>
-    <div class="field-row"><div class="field-label">Will Call Process</div><div class="field-value">{{val "willCallProcess"}}</div></div>
-    <div class="field-row"><div class="field-label">Format</div><div class="field-value">{{val "format"}}</div></div>
-    <div class="field-row"><div class="field-label">Artist Comps</div><div class="field-value">{{val "artistComps"}}</div></div>
-    <div class="field-row"><div class="field-label">Venue Comps</div><div class="field-value">{{val "venueComps"}}</div></div>
-    <div class="field-row"><div class="field-label">ADA Needs</div><div class="field-value">{{val "adaNeeds"}}</div></div>
-  </div>
+    <div class="card-grid two-col" style="margin-top:12px;">
+      {{if or (has "merchAllowed") (has "merchLocation") (has "cashlessPolicy") (has "merchStaffing") (has "merchSplit")}}
+      <div class="card">
+        <h3 class="card-title">Merchandise</h3>
+        {{if has "merchAllowed"}}<div class="field-row"><div class="field-label">Merch Allowed</div><div class="field-value">{{display "merchAllowed"}}</div></div>{{end}}
+        {{if has "merchLocation"}}<div class="field-row"><div class="field-label">Merch Location</div><div class="field-value">{{display "merchLocation"}}</div></div>{{end}}
+        {{if has "cashlessPolicy"}}<div class="field-row"><div class="field-label">Cashless Policy</div><div class="field-value">{{display "cashlessPolicy"}}</div></div>{{end}}
+        {{if has "merchStaffing"}}<div class="field-row"><div class="field-label">Staffing</div><div class="field-value">{{display "merchStaffing"}}</div></div>{{end}}
+        {{if has "merchSplit"}}<div class="field-row"><div class="field-label">Merch Split %</div><div class="field-value">{{display "merchSplit"}}</div></div>{{end}}
+      </div>
+      {{end}}
 
-  <div class="box">
-    <h3>Load-in & Parking</h3>
-    <div class="field-row"><div class="field-label">Load-in Entrance / Address</div><div class="field-value">{{val "loadInAddress"}}</div></div>
-    <div class="field-row"><div class="field-label">Dock / Ramp Notes</div><div class="field-value">{{val "dockNotes"}}</div></div>
-    <div class="field-row"><div class="field-label">Parking Instructions</div><div class="field-value">{{val "parkingInstructions"}}</div></div>
-    <div class="field-row"><div class="field-label">Credentials / Access Notes</div><div class="field-value">{{val "accessNotes"}}</div></div>
-  </div>
+      {{if or (has "lodgingProvider") (has "roomsNights") (has "propertyName") (has "checkInCheckOut") (has "namesConfirmations") (has "transportationNotes")}}
+      <div class="card">
+        <h3 class="card-title">Lodging & Transport</h3>
+        {{if has "lodgingProvider"}}<div class="field-row"><div class="field-label">Artist vs Venue Provides</div><div class="field-value">{{display "lodgingProvider"}}</div></div>{{end}}
+        {{if has "roomsNights"}}<div class="field-row"><div class="field-label">Rooms / Nights</div><div class="field-value">{{display "roomsNights"}}</div></div>{{end}}
+        {{if has "propertyName"}}<div class="field-row"><div class="field-label">Property Name</div><div class="field-value">{{display "propertyName"}}</div></div>{{end}}
+        {{if has "checkInCheckOut"}}<div class="field-row"><div class="field-label">Check-in / Check-out</div><div class="field-value">{{display "checkInCheckOut"}}</div></div>{{end}}
+        {{if has "namesConfirmations"}}<div class="field-row"><div class="field-label">Names / Confirmation #s</div><div class="field-value">{{display "namesConfirmations"}}</div></div>{{end}}
+        {{if has "transportationNotes"}}<div class="field-row"><div class="field-label">Transportation Notes</div><div class="field-value">{{display "transportationNotes"}}</div></div>{{end}}
+      </div>
+      {{end}}
+    </div>
 
-  <div class="box">
-    <h3>House Management</h3>
-    <div class="field-row"><div class="field-label">Strobe Lights</div><div class="field-value">{{val "strobeLights"}}</div></div>
-    <div class="field-row"><div class="field-label">Audience Photo / Video Policy</div><div class="field-value">{{val "audiencePolicy"}}</div></div>
-    <div class="field-row"><div class="field-label">Professional Photo / Video</div><div class="field-value">{{val "professionalPhotoVideo"}}</div></div>
-    <div class="field-row"><div class="field-label">GA Reserved Seats</div><div class="field-value">{{val "gaReservedSeats"}}</div></div>
-  </div>
+    {{if or (has "staging") (has "stagePlatforms") (has "lightingHaze") (has "linesetRigging") (has "plot") (has "audioBackline") (has "productionOther") (has "productionNotes") (has "videoStreaming") (has "pianoTuning") (has "crewTheyBring") (has "crewWeProvide")}}
+    <div class="card" style="margin-top:14px;">
+      <h3 class="card-title">Production Requirements</h3>
+      <div class="field-row"><div class="field-label">Staging</div><div class="field-value">{{display "staging"}}</div></div>
+      <div class="field-row"><div class="field-label">Drum Riser / Platforms</div><div class="field-value">{{display "stagePlatforms"}}</div></div>
+      <div class="field-row"><div class="field-label">Lighting / Haze</div><div class="field-value">{{display "lightingHaze"}}</div></div>
+      <div class="field-row"><div class="field-label">Rigging</div><div class="field-value">{{display "linesetRigging"}}</div></div>
+      <div class="field-row"><div class="field-label">Plot</div><div class="field-value">{{display "plot"}}</div></div>
+      <div class="field-row"><div class="field-label">Audio - Band Provides</div><div class="field-value">{{display "audioBackline"}}</div></div>
+      {{if has "productionOther"}}<div class="field-row"><div class="field-label">Audio - Venue Provides</div><div class="field-value">{{display "productionOther"}}</div></div>{{end}}
+      {{if has "productionNotes"}}<div class="field-row"><div class="field-label">Audio Notes</div><div class="field-value">{{display "productionNotes"}}</div></div>{{end}}
+      {{if has "videoStreaming"}}<div class="field-row"><div class="field-label">Video Streaming</div><div class="field-value">{{display "videoStreaming"}}</div></div>{{end}}
+      {{if has "pianoTuning"}}<div class="field-row"><div class="field-label">Piano / Tuning</div><div class="field-value">{{display "pianoTuning"}}</div></div>{{end}}
+      {{if has "crewTheyBring"}}<div class="field-row"><div class="field-label">Crew - They Bring</div><div class="field-value">{{display "crewTheyBring"}}</div></div>{{end}}
+      {{if has "crewWeProvide"}}<div class="field-row"><div class="field-label">Crew - We Provide</div><div class="field-value">{{display "crewWeProvide"}}</div></div>{{end}}
+    </div>
+    {{end}}
 
-  <div class="box">
-    <h3>Hospitality & Catering</h3>
-    <div class="field-row"><div class="field-label">Budget</div><div class="field-value">{{val "budget"}}</div></div>
-    <div class="field-row"><div class="field-label">Caterer</div><div class="field-value">{{val "caterer"}}</div></div>
-    <div class="field-row"><div class="field-label">Meals for # Artists / Personnel</div><div class="field-value">{{val "mealsFor"}}</div></div>
-    <div class="field-row"><div class="field-label">Meal Times</div><div class="field-value">{{val "mealTimes"}}</div></div>
-    <div class="field-row"><div class="field-label">Dietary Restrictions</div><div class="field-value">{{val "dietaryRestrictions"}}</div></div>
-    <div class="field-row"><div class="field-label">Meal Location</div><div class="field-value">{{val "mealLocation"}}</div></div>
-  </div>
+    {{if has "nextTimeNotes"}}
+    <div class="card" style="margin-top:12px;">
+      <h3 class="card-title">Next Time Notes</h3>
+      <div class="field-row"><div class="field-label">Notes</div><div class="field-value">{{display "nextTimeNotes"}}</div></div>
+    </div>
+    {{end}}
 
-  <div class="box">
-    <h3>Transportation</h3>
-    <div class="field-row"><div class="field-label">Transportation Notes</div><div class="field-value">{{val "transportationNotes"}}</div></div>
-  </div>
-
-  <div class="box">
-    <h3>Merchandise</h3>
-    <div class="field-row"><div class="field-label">Merch Allowed</div><div class="field-value">{{val "merchAllowed"}}</div></div>
-    <div class="field-row"><div class="field-label">Merch Location</div><div class="field-value">{{val "merchLocation"}}</div></div>
-    <div class="field-row"><div class="field-label">Cashless Policy</div><div class="field-value">{{val "cashlessPolicy"}}</div></div>
-    <div class="field-row"><div class="field-label">Staffing</div><div class="field-value">{{val "merchStaffing"}}</div></div>
-  </div>
-
-  <div class="box">
-    <h3>Lodging</h3>
-    <div class="field-row"><div class="field-label">Artist Provides vs Venue Provides</div><div class="field-value">{{val "lodgingProvider"}}</div></div>
-    <div class="field-row"><div class="field-label">Rooms / Nights</div><div class="field-value">{{val "roomsNights"}}</div></div>
-    <div class="field-row"><div class="field-label">Property Name</div><div class="field-value">{{val "propertyName"}}</div></div>
-    <div class="field-row"><div class="field-label">Check-in / Check-out</div><div class="field-value">{{val "checkInCheckOut"}}</div></div>
-    <div class="field-row"><div class="field-label">Names / Confirmation Numbers</div><div class="field-value">{{val "namesConfirmations"}}</div></div>
-  </div>
-
-  <div class="box">
-    <h3>Security & Staffing</h3>
-    <div class="field-row"><div class="field-label">Bag Check</div><div class="field-value">{{val "bagCheck"}}</div></div>
-    <div class="field-row"><div class="field-label">Theater Security</div><div class="field-value">{{val "theaterSecurity"}}</div></div>
-    <div class="field-row"><div class="field-label">Re-entry Policy</div><div class="field-value">{{val "reEntryPolicy"}}</div></div>
-    <div class="field-row"><div class="field-label">Bag Policy Details</div><div class="field-value">{{val "bagPolicyDetails"}}</div></div>
-    <div class="field-row"><div class="field-label">Barricade Security</div><div class="field-value">{{val "barricadeSecurity"}}</div></div>
-    <div class="field-row"><div class="field-label">Artist Escort Policy</div><div class="field-value">{{val "artistEscortPolicy"}}</div></div>
-    <div class="field-row"><div class="field-label">Emergency Procedures</div><div class="field-value">{{val "emergencyProcedures"}}</div></div>
-  </div>
-
-  <div class="box">
-    <h3>Production Requirements</h3>
-    <div class="field-row"><div class="field-label">Staging</div><div class="field-value">{{val "staging"}}</div></div>
-    <div class="field-row"><div class="field-label">Drum Riser / Platforms</div><div class="field-value">{{val "stagePlatforms"}}</div></div>
-    <div class="field-row"><div class="field-label">Lighting / Haze</div><div class="field-value">{{val "lightingHaze"}}</div></div>
-    <div class="field-row"><div class="field-label">Rigging</div><div class="field-value">{{val "linesetRigging"}}</div></div>
-    <div class="field-row"><div class="field-label">Plot</div><div class="field-value">{{val "plot"}}</div></div>
-    <div class="field-row"><div class="field-label">Audio - Band Provides</div><div class="field-value">{{val "audioBackline"}}</div></div>
-    <div class="field-row"><div class="field-label">Audio - Venue Provides</div><div class="field-value">{{val "productionOther"}}</div></div>
-    <div class="field-row"><div class="field-label">Audio Notes</div><div class="field-value">{{val "productionNotes"}}</div></div>
-    <div class="field-row"><div class="field-label">Video Streaming</div><div class="field-value">{{val "videoStreaming"}}</div></div>
-    <div class="field-row"><div class="field-label">Piano / Tuning</div><div class="field-value">{{val "pianoTuning"}}</div></div>
-    <div class="field-row"><div class="field-label">Crew - They Bring</div><div class="field-value">{{val "crewTheyBring"}}</div></div>
-    <div class="field-row"><div class="field-label">Crew - We Provide</div><div class="field-value">{{val "crewWeProvide"}}</div></div>
-  </div>
-
-  <div class="box">
-    <h3>Next Time Notes</h3>
-    <div class="field-row"><div class="field-label">Notes</div><div class="field-value">{{val "nextTimeNotes"}}</div></div>
-  </div>
-
-  <div class="box">
-    <h3>Contacts</h3>
-    <table class="contacts-table" style="width:100%; border-collapse:collapse; font-size:9pt;">
-      <thead>
-        <tr>
-          <th style="border:1px solid #e5e7eb; padding:6px 8px; text-align:left;">Name</th>
-          <th style="border:1px solid #e5e7eb; padding:6px 8px; text-align:left;">Email</th>
-          <th style="border:1px solid #e5e7eb; padding:6px 8px; text-align:left;">Phone</th>
-          <th style="border:1px solid #e5e7eb; padding:6px 8px; text-align:left;">Role</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{range .Contacts}}
-        <tr>
-          <td style="border:1px solid #e5e7eb; padding:6px 8px;">{{.Name}}</td>
-          <td style="border:1px solid #e5e7eb; padding:6px 8px;">{{.Email}}</td>
-          <td style="border:1px solid #e5e7eb; padding:6px 8px;">{{.Phone}}</td>
-          <td style="border:1px solid #e5e7eb; padding:6px 8px;">{{.Role}}</td>
-        </tr>
-        {{else}}
-        <tr><td colspan="4" style="border:1px solid #e5e7eb; padding:6px 8px;">TBD</td></tr>
-        {{end}}
-      </tbody>
-    </table>
+    <div class="card" style="margin-top:12px;">
+      <h3 class="card-title">Contacts</h3>
+      <table class="contacts-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Contacts}}
+          <tr>
+            <td>{{contact .Name}}</td>
+            <td>{{contact .Email}}</td>
+            <td>{{contact .Phone}}</td>
+            <td>{{contact .Role}}</td>
+          </tr>
+          {{else}}
+          <tr><td colspan="4" style="text-align:center;">TBD</td></tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
   </div>
 </body>
 </html>
