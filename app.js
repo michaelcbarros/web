@@ -1,4 +1,5 @@
-import { renderAdvancePDF } from './pdf/renderAdvancePDF.js';
+import { jsPDF } from './node_modules/jspdf/dist/jspdf.umd.min.js';
+import html2canvas from './node_modules/html2canvas/dist/html2canvas.min.js';
 
 const form = document.getElementById('advance-form');
 const preview = document.getElementById('pdf-preview');
@@ -517,23 +518,15 @@ function handleGenerate(event) {
 async function renderPdfFromPreview(baseFileName) {
   const target = document.getElementById('pdf-preview');
 
-  if (!window.html2canvas || !window.jspdf || !window.jspdf.jsPDF) {
-    alert(
-      'Local PDF libraries not found. Please add vendor/html2canvas.min.js and vendor/jspdf.umd.min.js, then try again.'
-    );
-    window.print();
-    return;
-  }
-
   try {
-    const canvas = await window.html2canvas(target, {
+    const canvas = await html2canvas(target, {
       scale: 3,
       useCORS: true,
       scrollY: -window.scrollY
     });
 
     const imgData = canvas.toDataURL('image/png');
-    const pdf = new window.jspdf.jsPDF({ orientation: 'p', unit: 'pt', format: 'letter' });
+    const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'letter' });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 24;
