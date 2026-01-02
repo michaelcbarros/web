@@ -511,7 +511,7 @@ function handleGenerate(event) {
   event?.stopPropagation();
   const data = collectFormData();
   renderPreview(data);
-  renderPdfFromPreview(buildFileName(data));
+  renderPdfFromPreview(data, buildFileName(data));
 }
 
 async function renderPdfFromPreview(baseFileName) {
